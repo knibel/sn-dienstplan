@@ -26,6 +26,14 @@ class DienstplanWorld extends World {
     await this.page.waitForFunction(
       () => document.getElementById("weekLabel")?.textContent?.trim().length > 0
     );
+    // Frischer Start: lokale Entwicklungs-JSON per „Laden“ einspielen
+    if (clearStorage) {
+      const localJson = path.resolve(__dirname, "../../dienstplan.local.json");
+      await this.page.locator("#fileInput").setInputFiles(localJson);
+      await this.page.waitForFunction(
+        () => (document.querySelectorAll("#grid .chip").length > 0)
+      );
+    }
   }
 
   async acceptNextDialog() {

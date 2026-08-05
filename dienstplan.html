@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dienstplan Spatzennest</title>
 <style>
+/* ---- tokens ---- */
 :root{
   --bg:#eef1f4; --panel:#ffffff; --ink:#1d2b3a; --muted:#6b7a8d;
   --line:#d4dbe3; --line-strong:#b4bfcc;
   --frueh:#fff8e6; --mittel:#eaf4ff; --spaet:#f0ecfb; --abw:#ffeef0;
   --hdr:#22384f; --accent:#2f6f4f;
-  --g-maeuse:#e8623c; --g-hasen:#3f8f5b; --g-maeuschen:#c9932b; --g-haeschen:#3d6fb3;
-  --g-springer:#7a56b0; --g-praktikanten:#0d8f9c; --g-leitung:#5a6472;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
+
+/* ---- shell / toolbar ---- */
 header{background:var(--hdr);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:30}
 header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .weeknav{display:flex;align-items:center;gap:8px;margin-left:auto}
@@ -25,11 +26,6 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 .toolbar .hint{color:var(--muted);font-size:11.5px;margin-left:auto}
 .layout{display:flex;gap:0;align-items:flex-start}
-.pool{width:210px;flex:0 0 210px;background:var(--panel);border-right:1px solid var(--line);padding:10px;position:sticky;top:92px;max-height:calc(100vh - 92px);overflow-y:auto}
-.pool h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
-.pool .poolnote{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4}
-#pool{min-height:60px}
-.pool.dragover{outline:2px dashed var(--muted);outline-offset:-4px}
 .main{flex:1;padding:14px;overflow-x:auto}
 .daytabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
 .daytab{padding:6px 14px;border:1px solid var(--line-strong);background:#fff;border-radius:7px 7px 0 0;cursor:pointer;font-weight:600;font-size:12.5px}
@@ -38,7 +34,23 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .daymeta{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .daymeta label{font-size:11.5px;color:var(--muted)}
 .daymeta select{font-family:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line-strong);border-radius:5px}
+.house{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.house .box{background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:10px}
+.house h4{margin:0 0 6px;font-size:12px;color:var(--hdr)}
+.house textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:12px;padding:6px;resize:vertical;min-height:60px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted);align-items:center}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.saved-flash{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
+.saved-flash.show{opacity:1}
 
+/* ---- pool ---- */
+.pool{width:210px;flex:0 0 210px;background:var(--panel);border-right:1px solid var(--line);padding:10px;position:sticky;top:92px;max-height:calc(100vh - 92px);overflow-y:auto}
+.pool h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
+.pool .poolnote{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4}
+#pool{min-height:60px}
+.pool.dragover{outline:2px dashed var(--muted);outline-offset:-4px}
+
+/* ---- grid / chips ---- */
 .grid{display:grid;grid-template-columns:150px 1fr 1fr 1fr 150px;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:#fff;min-width:900px}
 .grid .ghead{background:#f3f6f9;font-weight:700;padding:8px 10px;font-size:12px;border-bottom:2px solid var(--line-strong);border-right:1px solid var(--line);text-align:center}
 .grid .ghead.rowlbl{text-align:left}
@@ -49,7 +61,6 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .cell.abw{background:var(--abw)}
 .cell.dragover{outline:2px dashed var(--accent);outline-offset:-3px;background:#e4f2ea}
 .cell:last-child{border-right:none}
-
 .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:14px;font-size:12px;color:#fff;cursor:grab;user-select:none;box-shadow:0 1px 2px rgba(0,0,0,.15);border:1.5px solid rgba(255,255,255,.25)}
 .chip:active{cursor:grabbing}
 .chip .away{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.35)}
@@ -57,19 +68,17 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .chip.away-krank{opacity:.55;text-decoration:line-through}
 .chip.away-urlaub{opacity:.55}
 .chip small{font-size:9px;opacity:.85;background:rgba(0,0,0,.22);padding:1px 4px;border-radius:6px}
-
 .commentcol{padding:6px;border-bottom:1px solid var(--line);background:#fafcfe}
 .commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:vertical;min-height:44px;background:#fff}
 
-.house{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.house .box{background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:10px}
-.house h4{margin:0 0 6px;font-size:12px;color:var(--hdr)}
-.house textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:12px;padding:6px;resize:vertical;min-height:60px}
-
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted);align-items:center}
-.legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
-
+/* ---- dialogs / staff ---- */
 dialog{border:none;border-radius:10px;padding:0;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:340px}
+#staffDialog{max-width:min(560px,95vw);width:560px}
+#groupsDialog{max-width:min(480px,95vw);width:480px}
+.color-swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.color-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;flex:0 0 22px;box-sizing:border-box}
+.color-swatch.selected{outline:2px solid var(--ink);outline-offset:1px;border-color:#fff}
+.staffrow .color-swatches{margin-left:auto}
 dialog .dlg{padding:16px}
 dialog h3{margin:0 0 12px;font-size:14px}
 dialog label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
@@ -85,10 +94,8 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 .staffrow select{font-family:inherit;font-size:11.5px;padding:2px 4px;border:1px solid var(--line-strong);border-radius:4px}
 .staffrow button{cursor:pointer;font-size:11px;border:1px solid var(--line-strong);background:#fff;border-radius:5px;padding:3px 8px}
 .staffrow button.del{color:#b3341f;border-color:#e0b0a8}
-.saved-flash{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
-.saved-flash.show{opacity:1}
 
-/* ===================== PRINT / PDF ===================== */
+/* ---- print ---- */
 /* Druckcontainer wird nur beim Drucken sichtbar; App-UI wird komplett ausgeblendet. */
 #printRoot{display:none}
 @media print{
@@ -174,6 +181,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <button id="btnResetWeek">↺ Woche zurücksetzen</button>
   <span class="sep"></span>
   <button id="btnStaff">👥 Personal</button>
+  <button id="btnGroups">🧩 Gruppen</button>
   <span class="hint">Mitarbeiter per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
 </div>
 
@@ -225,7 +233,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   </div>
 </div></dialog>
 
-<dialog id="staffDialog"><div class="dlg" style="max-width:none;width:440px">
+<dialog id="staffDialog"><div class="dlg">
   <h3>Personal verwalten</h3>
   <div id="staffList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
   <div style="border-top:1px solid var(--line);padding-top:10px">
@@ -242,6 +250,21 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     </div>
   </div>
   <div class="btns"><button id="staffClose" class="primary">Fertig</button></div>
+</div></dialog>
+
+<dialog id="groupsDialog"><div class="dlg">
+  <h3>Gruppen verwalten</h3>
+  <div id="groupsList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
+  <div style="border-top:1px solid var(--line);padding-top:10px">
+    <strong style="font-size:12px">Neue Gruppe</strong>
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
+      <input id="newGroupName" placeholder="Name" style="flex:1;min-width:140px">
+      <button id="newGroupAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
+    </div>
+    <label style="margin-top:8px">Farbe</label>
+    <div id="newGroupColors" class="color-swatches" style="margin-top:4px"></div>
+  </div>
+  <div class="btns"><button id="groupsClose" class="primary">Fertig</button></div>
 </div></dialog>
 
 <div class="saved-flash" id="flash"></div>
@@ -264,488 +287,948 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 <div id="printRoot"></div>
 
 <script>
-// ---------- Stammdaten (aus deiner Vorlage extrahiert) ----------
-const GROUPS = ["Mäuse","Hasen","Mäuschen","Häschen","Springer","Praktikanten/-innen","Leitung"];
-const GROUP_VAR = {
-  "Mäuse":"--g-maeuse","Hasen":"--g-hasen","Mäuschen":"--g-maeuschen","Häschen":"--g-haeschen",
-  "Springer":"--g-springer","Praktikanten/-innen":"--g-praktikanten","Leitung":"--g-leitung"
+/* ==========================================================================
+   Modularisierung in einer Datei.
+   Domain (rein): Constants · Dates · Staff · Groups · Week · ViewModel
+   Runtime:       Store (get/mutate/subscribe) · View · Dialoge · Persistence · Print · App
+   ========================================================================== */
+
+// ---------- Constants ----------
+const Constants = {
+  /** Feste Palette für Gruppenfarben. */
+  GROUP_COLORS: ["#e8623c","#3f8f5b","#c9932b","#3d6fb3","#7a56b0","#0d8f9c","#5a6472"],
+  SHIFTS: [["frueh","Frühschicht"],["mittel","Mittelschicht"],["spaet","Spätschicht"]],
+  SHIFT_KEYS: ["frueh","mittel","spaet"],
+  AWAY_LABEL: {krank:"krank",urlaub:"Urlaub",sonstiges:"Sonst."},
+  DAYS: ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"],
+  STORAGE_KEY: "dienstplan_spatzennest",
 };
-const SHIFTS = [["frueh","Frühschicht"],["mittel","Mittelschicht"],["spaet","Spätschicht"]];
-const AWAY_LABEL = {krank:"krank",urlaub:"Urlaub",sonstiges:"Sonst."};
 
-// Anfangs-Mitarbeiter (aus der Vorlage). Werden beim ersten Start in den State kopiert
-// und ab dann dort (und in der gespeicherten Datei) verwaltet.
-const STAFF_SEED = [
-  {name:"Vivien",stamm:"Mäuse",shift:"spaet"},
-  {name:"Gül",stamm:"Mäuse",shift:"frueh"},
-  {name:"Chantal",stamm:"Mäuse",shift:"frueh"},
-  {name:"Daniela",stamm:"Hasen",shift:"spaet"},
-  {name:"Barbara",stamm:"Hasen",shift:"mittel"},
-  {name:"Daniel",stamm:"Hasen",shift:"frueh"},
-  {name:"Sabrina",stamm:"Mäuschen",shift:"spaet"},
-  {name:"Melli",stamm:"Mäuschen",shift:"mittel"},
-  {name:"Lena",stamm:"Mäuschen",shift:"frueh"},
-  {name:"Thomas",stamm:"Häschen",shift:"spaet"},
-  {name:"Maria",stamm:"Häschen",shift:"mittel"},
-  {name:"Viktoria",stamm:"Häschen",shift:"frueh"},
-  {name:"Birgit",stamm:"Springer",shift:"frueh"},
-  {name:"Beate",stamm:"Leitung",shift:"frueh"},
-].map(s=>({...s,active:true}));
-const DAYS = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
-
-// ---------- State ----------
-// staff: [{name,stamm,shift,active}]
-// weekKey -> {mondayISO, days:[{mode,info,assign:{name:{shift,group,away}}, comments:{group:txt}}], houseInfo}
-let state = { weekStartISO:null, weeks:{}, staff:JSON.parse(JSON.stringify(STAFF_SEED)) };
-
-// Zugriffshelfer auf den Personalstamm im State
-function allStaff(){ return state.staff||[]; }              // inkl. deaktivierte
-function activeStaff(){ return allStaff().filter(s=>s.active!==false); }
-function staffByName(n){ return allStaff().find(s=>s.name===n); }
-function stammOf(n){ const s=staffByName(n); return s?s.stamm:GROUPS[0]; }
-let curWeekKey, curDay=0;
-
-function toDate(d){if(typeof d==="string"){const p=d.slice(0,10).split("-");return new Date(+p[0],+p[1]-1,+p[2]);}return new Date(d);}
-function mondayOf(d){const x=toDate(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);x.setHours(0,0,0,0);return x;}
-function iso(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return y+"-"+m+"-"+day;}
-function fmtDE(d){return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});}
-function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
-
-function blankWeek(mondayISO){
-  return {mondayISO, houseInfo:"", days:DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:{},comments:{}}))};
-}
-function ensureWeek(mondayISO){
-  if(!state.weeks[mondayISO]) state.weeks[mondayISO]=blankWeek(mondayISO);
-  return state.weeks[mondayISO];
-}
-function defaultAssignForDay(){
-  // default: everyone in Stammgruppe with default shift
-  const a={};
-  activeStaff().forEach(s=>{ a[s.name]={shift:s.shift,group:s.stamm,away:""}; });
-  return a;
-}
-
-// ---------- Rendering ----------
-function groupColor(g){return getComputedStyle(document.documentElement).getPropertyValue(GROUP_VAR[g]||"--g-leitung").trim();}
-
-function render(){
-  const wk=state.weeks[curWeekKey];
-  const mon=toDate(wk.mondayISO);
-  document.getElementById("weekLabel").textContent =
-    fmtDE(mon)+" – "+fmtDE(addDays(mon,4));
-  // day tabs
-  const tabs=document.getElementById("dayTabs"); tabs.innerHTML="";
-  DAYS.forEach((dn,i)=>{
-    const t=document.createElement("div");
-    t.className="daytab"+(i===curDay?" active":"");
-    t.innerHTML=`${dn} <span class="dnum">${fmtDE(addDays(mon,i))}</span>`;
-    t.onclick=()=>{curDay=i;render();};
-    tabs.appendChild(t);
-  });
-  const day=wk.days[curDay];
-  document.getElementById("dayMode").value=day.mode;
-  document.getElementById("dayInfo").value=day.info||"";
-  document.getElementById("houseInfo").value=wk.houseInfo||"";
-
-  renderGrid(day);
-  renderPool(day);
-  renderLegend();
-}
-
-function renderGrid(day){
-  const grid=document.getElementById("grid"); grid.innerHTML="";
-  const heads=["Gruppe","Frühschicht","Mittelschicht","Spätschicht","Kommentar"];
-  heads.forEach((h,i)=>{const el=document.createElement("div");el.className="ghead"+(i===0?" rowlbl":"");el.textContent=h;grid.appendChild(el);});
-  GROUPS.forEach(g=>{
-    const lbl=document.createElement("div");
-    lbl.className="g-label"; lbl.style.background=groupColor(g); lbl.textContent=g;
-    grid.appendChild(lbl);
-    SHIFTS.forEach(([sk])=>{
-      const cell=document.createElement("div");
-      cell.className="cell "+sk; cell.dataset.group=g; cell.dataset.shift=sk;
-      wireDrop(cell,day);
-      // chips whose assignment matches this group+shift and not away
-      Object.entries(day.assign).forEach(([name,a])=>{
-        if(a.group===g && a.shift===sk){ cell.appendChild(makeChip(name,a,day)); }
-      });
-      grid.appendChild(cell);
-    });
-    // comment column
-    const cc=document.createElement("div"); cc.className="commentcol";
-    const ta=document.createElement("textarea");
-    ta.value=day.comments[g]||""; ta.placeholder="…";
-    ta.oninput=()=>{day.comments[g]=ta.value;};
-    cc.appendChild(ta); grid.appendChild(cc);
-  });
-}
-
-function makeChip(name,a,day){
-  const c=document.createElement("div");
-  const stamm=stammOf(name);
-  c.className="chip"+(a.group!==stamm?" guest":"")+(a.away?(" away-"+a.away):"");
-  c.style.background=groupColor(a.group);
-  c.draggable=true; c.dataset.name=name;
-  let inner=name;
-  if(a.group!==stamm) inner+=` <small>${stamm}</small>`;
-  if(a.away) inner=`<span class="away"></span>`+inner+` <small>${AWAY_LABEL[a.away]}</small>`;
-  c.innerHTML=inner;
-  c.ondragstart=e=>{e.dataTransfer.setData("text/plain",name);dragName=name;};
-  c.onclick=()=>openChipDialog(name,day);
-  return c;
-}
-
-function renderPool(day){
-  const pool=document.getElementById("pool"); pool.innerHTML="";
-  const assigned=new Set(Object.keys(day.assign));
-  activeStaff().filter(s=>!assigned.has(s.name)).forEach(s=>{
-    const c=document.createElement("div");
-    c.className="chip"; c.style.background=groupColor(s.stamm);
-    c.draggable=true; c.dataset.name=s.name;
-    c.innerHTML=s.name+` <small>${s.stamm}</small>`;
-    c.ondragstart=e=>{e.dataTransfer.setData("text/plain",s.name);dragName=s.name;};
-    pool.appendChild(c);
-  });
-  if(!pool.children.length) pool.innerHTML='<div class="poolnote">Alle eingeteilt.</div>';
-  wirePoolDrop(pool,day);
-}
-
-let dragName=null;
-function wireDrop(cell,day){
-  cell.ondragover=e=>{e.preventDefault();cell.classList.add("dragover");};
-  cell.ondragleave=()=>cell.classList.remove("dragover");
-  cell.ondrop=e=>{
-    e.preventDefault();cell.classList.remove("dragover");
-    const name=e.dataTransfer.getData("text/plain")||dragName;
-    if(!name)return;
-    const prev=day.assign[name]||{away:"",group:stammOf(name)};
-    day.assign[name]={shift:cell.dataset.shift,group:cell.dataset.group,away:prev.away||""};
-    render();
-  };
-}
-function wirePoolDrop(pool,day){
-  const aside=document.getElementById("poolAside");
-  aside.ondragover=e=>{e.preventDefault();aside.classList.add("dragover");};
-  aside.ondragleave=e=>{if(!aside.contains(e.relatedTarget))aside.classList.remove("dragover");};
-  aside.ondrop=e=>{
-    e.preventDefault();aside.classList.remove("dragover");
-    const name=e.dataTransfer.getData("text/plain")||dragName;
-    if(name){delete day.assign[name];render();}
-  };
-}
-
-function renderLegend(){
-  const l=document.getElementById("legend"); l.innerHTML="";
-  GROUPS.forEach(g=>{
-    const s=document.createElement("span");
-    s.innerHTML=`<span class="sw" style="background:${groupColor(g)}"></span>${g}`;
-    l.appendChild(s);
-  });
-  const note=document.createElement("span");
-  note.textContent="Gestrichelte Umrandung = Gasteinsatz (nicht Stammgruppe)";
-  l.appendChild(note);
-}
-
-// ---------- Chip dialog ----------
-let dlgName=null,dlgDay=null;
-function openChipDialog(name,day){
-  dlgName=name;dlgDay=day;
-  const a=day.assign[name];
-  document.getElementById("dlgName").textContent=name+"  ·  Stammgruppe "+stammOf(name);
-  document.getElementById("dlgShift").value=a.shift;
-  const gsel=document.getElementById("dlgGroup"); gsel.innerHTML="";
-  GROUPS.forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g+(g===stammOf(name)?" (Stamm)":"");gsel.appendChild(o);});
-  gsel.value=a.group;
-  document.getElementById("dlgAway").value=a.away||"";
-  document.getElementById("chipDialog").showModal();
-}
-document.getElementById("dlgOk").onclick=()=>{
-  const a=dlgDay.assign[dlgName];
-  a.shift=document.getElementById("dlgShift").value;
-  a.group=document.getElementById("dlgGroup").value;
-  a.away=document.getElementById("dlgAway").value;
-  document.getElementById("chipDialog").close();render();
-};
-document.getElementById("dlgCancel").onclick=()=>document.getElementById("chipDialog").close();
-document.getElementById("dlgRemove").onclick=()=>{delete dlgDay.assign[dlgName];document.getElementById("chipDialog").close();render();};
-
-// ---------- Personalverwaltung ----------
-function openStaffDialog(){
-  const gsel=document.getElementById("newGroup");
-  if(!gsel.options.length){GROUPS.forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g;gsel.appendChild(o);});}
-  renderStaffList();
-  document.getElementById("staffDialog").showModal();
-}
-function renderStaffList(){
-  const box=document.getElementById("staffList");box.innerHTML="";
-  allStaff().forEach((s,idx)=>{
-    const row=document.createElement("div");
-    row.className="staffrow"+(s.active===false?" inactive":"");
-    // color dot
-    const dot=document.createElement("span");dot.className="dot";dot.style.background=groupColor(s.stamm);row.appendChild(dot);
-    const nm=document.createElement("span");nm.className="nm";nm.textContent=s.name;row.appendChild(nm);
-    // group select
-    const gs=document.createElement("select");
-    GROUPS.forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g;gs.appendChild(o);});
-    gs.value=s.stamm; gs.onchange=()=>{s.stamm=gs.value;dot.style.background=groupColor(s.stamm);};
-    row.appendChild(gs);
-    // shift select
-    const ss=document.createElement("select");
-    SHIFTS.forEach(([k,l])=>{const o=document.createElement("option");o.value=k;o.textContent=l;ss.appendChild(o);});
-    ss.value=s.shift; ss.onchange=()=>{s.shift=ss.value;};
-    row.appendChild(ss);
-    // activate / deactivate
-    if(s.active===false){
-      const b=document.createElement("button");b.textContent="Aktivieren";
-      b.onclick=()=>{s.active=true;renderStaffList();};row.appendChild(b);
-    }else{
-      const b=document.createElement("button");b.textContent="Deaktivieren";b.title="Ab jetzt nicht mehr einplanbar. Bestehende Wochen bleiben unverändert.";
-      b.onclick=()=>{s.active=false;renderStaffList();};row.appendChild(b);
+// ---------- Dates (rein) ----------
+const Dates = {
+  toDate(d){
+    if(typeof d==="string"){
+      const p=d.slice(0,10).split("-");
+      return new Date(+p[0],+p[1]-1,+p[2]);
     }
-    // hard delete (only if never used anywhere)
-    const del=document.createElement("button");del.className="del";del.textContent="Löschen";
-    del.title="Endgültig entfernen (nur möglich, wenn nirgends eingeplant)";
-    del.onclick=()=>{
-      if(isStaffUsed(s.name)){alert(s.name+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden. Nutze stattdessen 'Deaktivieren'.");return;}
-      if(!confirm(s.name+" endgültig löschen?"))return;
-      state.staff.splice(idx,1);renderStaffList();
+    return new Date(d);
+  },
+  mondayOf(d){
+    const x=Dates.toDate(d);
+    const dow=(x.getDay()+6)%7;
+    x.setDate(x.getDate()-dow);
+    x.setHours(0,0,0,0);
+    return x;
+  },
+  iso(d){
+    const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+    return y+"-"+m+"-"+day;
+  },
+  fmtDE(d){
+    return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+  },
+  addDays(d,n){
+    const x=new Date(d);
+    x.setDate(x.getDate()+n);
+    return x;
+  },
+};
+
+// ---------- Staff (rein: arbeitet auf übergebenen Daten) ----------
+const Staff = {
+  all(staff){ return staff||[]; },
+  active(staff){ return Staff.all(staff).filter(s=>s.active!==false); },
+  byName(staff,n){ return Staff.all(staff).find(s=>s.name===n); },
+  stammOf(staff,groups,n){
+    const s=Staff.byName(staff,n);
+    return s?s.stamm:Groups.firstName(groups);
+  },
+  isUsed(weeks,name){
+    return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>d.assign && (name in d.assign)));
+  },
+  create({name,stamm,shift}){
+    return {name,stamm,shift,active:true};
+  },
+  removeAt(staff,index){
+    staff.splice(index,1);
+    return staff;
+  },
+};
+
+// ---------- Groups (rein) ----------
+// groups: [{name, color}]  (color = Hex, z.B. "#e8623c")
+const Groups = {
+  all(groups){ return groups||[]; },
+  names(groups){ return Groups.all(groups).map(g=>g.name); },
+  firstName(groups){
+    const list=Groups.all(groups);
+    return list.length ? list[0].name : undefined;
+  },
+  find(groups,name){ return Groups.all(groups).find(g=>g.name===name); },
+  has(groups,name){ return !!Groups.find(groups,name); },
+  colorOf(groups,name){
+    const g=Groups.find(groups,name);
+    return (g && g.color) || Constants.GROUP_COLORS[Constants.GROUP_COLORS.length-1];
+  },
+  usedColors(groups){
+    return new Set(Groups.all(groups).map(g=>g.color).filter(Boolean));
+  },
+  /** Erste Palette-Farbe, die noch nicht vergeben ist; sonst erste Farbe. */
+  defaultColor(groups){
+    const used=Groups.usedColors(groups);
+    return Constants.GROUP_COLORS.find(c=>!used.has(c)) || Constants.GROUP_COLORS[0];
+  },
+  isUsed(staff,weeks,name){
+    if((staff||[]).some(p=>p.stamm===name)) return true;
+    return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>{
+      if(((d.comments||{})[name]||"").trim()) return true;
+      return Object.values(d.assign||{}).some(a=>a.group===name);
+    }));
+  },
+  add(groups,name,color){
+    groups.push({name, color:color || Groups.defaultColor(groups)});
+    return groups;
+  },
+  remove(groups,name){
+    const i=Groups.all(groups).findIndex(g=>g.name===name);
+    if(i>=0) groups.splice(i,1);
+    return groups;
+  },
+  setColor(groups,name,color){
+    const g=Groups.find(groups,name);
+    if(g) g.color=color;
+    return groups;
+  },
+};
+
+// ---------- Week (rein) ----------
+const Week = {
+  blank(mondayISO){
+    return {
+      mondayISO,
+      houseInfo:"",
+      days:Constants.DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:{},comments:{}})),
     };
-    row.appendChild(del);
-    box.appendChild(row);
-  });
-  if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">Noch kein Personal angelegt.</div>';
-}
-function isStaffUsed(name){
-  return Object.values(state.weeks).some(wk=>wk.days.some(d=>d.assign && (name in d.assign)));
-}
-document.getElementById("btnStaff").onclick=openStaffDialog;
-document.getElementById("staffClose").onclick=()=>{document.getElementById("staffDialog").close();render();};
-document.getElementById("newAdd").onclick=()=>{
-  const name=document.getElementById("newName").value.trim();
-  if(!name){alert("Bitte einen Namen eingeben.");return;}
-  if(staffByName(name)){alert("Es gibt bereits eine Person mit diesem Namen.");return;}
-  state.staff.push({name,stamm:document.getElementById("newGroup").value,shift:document.getElementById("newShift").value,active:true});
-  document.getElementById("newName").value="";
-  renderStaffList();flash(name+" hinzugefügt");
-};
-
-// ---------- day meta ----------
-document.getElementById("dayMode").onchange=e=>{state.weeks[curWeekKey].days[curDay].mode=e.target.value;};
-document.getElementById("dayInfo").oninput=e=>{state.weeks[curWeekKey].days[curDay].info=e.target.value;};
-document.getElementById("houseInfo").oninput=e=>{state.weeks[curWeekKey].houseInfo=e.target.value;};
-
-// ---------- week nav ----------
-function gotoWeek(mondayISO){
-  ensureWeek(mondayISO);
-  // pre-fill assignment on first visit if all days empty
-  const wk=state.weeks[mondayISO];
-  wk.days.forEach(d=>{ if(Object.keys(d.assign).length===0) d.assign=defaultAssignForDay(); });
-  curWeekKey=mondayISO;curDay=0;render();
-}
-document.getElementById("prevWeek").onclick=()=>{const m=addDays(toDate(curWeekKey),-7);gotoWeek(iso(mondayOf(m)));};
-document.getElementById("nextWeek").onclick=()=>{const m=addDays(toDate(curWeekKey),7);gotoWeek(iso(mondayOf(m)));};
-
-document.getElementById("btnResetWeek").onclick=()=>{
-  if(!confirm("Diese Woche auf Standard (alle in Stammgruppe) zurücksetzen?"))return;
-  const wk=state.weeks[curWeekKey];
-  wk.days=DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:defaultAssignForDay(),comments:{}}));
-  wk.houseInfo="";render();
-};
-document.getElementById("btnCopyPrev").onclick=()=>{
-  const prevKey=iso(mondayOf(addDays(toDate(curWeekKey),-7)));
-  const prev=state.weeks[prevKey];
-  if(!prev){alert("Keine Vorwoche vorhanden.");return;}
-  if(!confirm("Aktuelle Woche mit den Daten der Vorwoche überschreiben?"))return;
-  state.weeks[curWeekKey]=JSON.parse(JSON.stringify(prev));
-  state.weeks[curWeekKey].mondayISO=curWeekKey;render();
-};
-
-// ---------- save / load ----------
-// Fester Speicherplatz im Browser (wird bei jedem Speichern überschrieben).
-const STORAGE_KEY = "dienstplan_spatzennest";
-
-function flash(msg){const f=document.getElementById("flash");f.textContent=msg;f.classList.add("show");setTimeout(()=>f.classList.remove("show"),1400);}
-
-function normalizeLoadedState(raw){
-  if(!raw || typeof raw!=="object") throw new Error("ungültiger Stand");
-  if(!raw.weeks) raw.weeks={};
-  if(!raw.staff||!raw.staff.length){
-    // Alte Datei ohne Personalstamm: aus Seed + evtl. vorkommenden Namen rekonstruieren
-    raw.staff=JSON.parse(JSON.stringify(STAFF_SEED));
-    const known=new Set(raw.staff.map(s=>s.name));
-    Object.values(raw.weeks).forEach(wk=>(wk.days||[]).forEach(d=>Object.entries(d.assign||{}).forEach(([n,a])=>{
-      if(!known.has(n)){known.add(n);raw.staff.push({name:n,stamm:a.group||GROUPS[0],shift:a.shift||"frueh",active:true});}
-    })));
-  }
-  return raw;
-}
-
-function persistState(){
-  state.weekStartISO = curWeekKey;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function readPersistedState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return null;
-  try { return normalizeLoadedState(JSON.parse(raw)); }
-  catch(err){ console.warn("Gespeicherter Stand ungültig:", err); return null; }
-}
-
-function applyState(loaded){
-  state = loaded;
-  const keys = Object.keys(state.weeks||{}).sort();
-  const preferred = state.weekStartISO && state.weeks[state.weekStartISO]
-    ? state.weekStartISO
-    : keys[0];
-  if(preferred) gotoWeek(preferred);
-  else gotoWeek(iso(mondayOf(new Date())));
-}
-
-document.getElementById("btnSave").onclick=()=>{
-  persistState();
-  flash("Gespeichert");
-};
-
-async function saveStateAsFile(){
-  state.weekStartISO = curWeekKey;
-  const json = JSON.stringify(state, null, 2);
-  const filename = "dienstplan_"+curWeekKey+".json";
-
-  if(typeof window.showSaveFilePicker==="function"){
-    try{
-      const handle = await window.showSaveFilePicker({
-        suggestedName: filename,
-        types:[{description:"JSON",accept:{"application/json":[".json"]}}]
-      });
-      const writable = await handle.createWritable();
-      await writable.write(json);
-      await writable.close();
-      flash("Datei gespeichert");
-      return;
-    }catch(err){
-      if(err && err.name==="AbortError") return;
-      // Fallback: Download, falls der Dateidialog scheitert
-    }
-  }
-
-  const blob = new Blob([json],{type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-  flash("Datei gespeichert");
-}
-
-document.getElementById("btnSaveAs").onclick=()=>{ saveStateAsFile(); };
-document.getElementById("btnLoad").onclick=()=>document.getElementById("fileInput").click();
-document.getElementById("fileInput").onchange=e=>{
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{try{
-    applyState(normalizeLoadedState(JSON.parse(r.result)));
-    flash("Geladen");
-  }catch(err){alert("Datei konnte nicht gelesen werden.");}};
-  r.readAsText(f);
-  e.target.value="";
-};
-
-// ---------- PDF / Print (read-only Ansicht) ----------
-function esc(s){return (s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
-
-function buildPrintDay(wk,di){
-  const mon=toDate(wk.mondayISO);
-  const day=wk.days[di];
-  const closed=day.mode==="Schließung";
-  let html='<div class="pr-day">';
-  html+='<div class="pr-dayhead">'
-      +'<span class="dn">'+DAYS[di]+'</span>'
-      +'<span class="dt">'+fmtDE(addDays(mon,di))+'</span>'
-      +'<span class="mode'+(closed?" closed":"")+'">'+esc(day.mode)+'</span>'
-      +'</div>';
-
-  html+='<table class="pr-tbl"><thead><tr>'
-      +'<th class="grp">Gruppe</th>'
-      +'<th>Frühschicht</th><th>Mittelschicht</th><th>Spätschicht</th>'
-      +'<th class="cmt">Kommentar</th></tr></thead><tbody>';
-
-  GROUPS.forEach(g=>{
-    const byShift={frueh:[],mittel:[],spaet:[]};
-    Object.entries(day.assign).forEach(([name,a])=>{
-      if(a.group!==g)return;
-      const stamm=stammOf(name);
-      let cls="pr-person"+(a.away?(" away "+a.away):"");
-      let inner=esc(name);
-      if(a.group!==stamm) inner+=' <span class="tag">['+esc(stamm)+']</span>';
-      if(a.away) inner+=' <span class="aw">('+esc(AWAY_LABEL[a.away]||a.away)+')</span>';
-      (byShift[a.shift]||byShift.frueh).push('<span class="'+cls+'">'+inner+'</span>');
+  },
+  ensure(weeks,mondayISO){
+    if(!weeks[mondayISO]) weeks[mondayISO]=Week.blank(mondayISO);
+    return weeks[mondayISO];
+  },
+  defaultAssign(staff){
+    const a={};
+    Staff.active(staff).forEach(s=>{ a[s.name]={shift:s.shift,group:s.stamm,away:""}; });
+    return a;
+  },
+  fillEmptyDays(week,staff){
+    week.days.forEach(d=>{
+      if(Object.keys(d.assign).length===0) d.assign=Week.defaultAssign(staff);
     });
-    const col=groupColor(g);
-    const cell=arr=>arr.length?arr.join(""):'<span class="empty">–</span>';
-    html+='<tr>'
-        +'<td class="grp" style="background:'+col+'">'+esc(g)+'</td>'
-        +'<td class="shift s-frueh">'+cell(byShift.frueh)+'</td>'
-        +'<td class="shift s-mittel">'+cell(byShift.mittel)+'</td>'
-        +'<td class="shift s-spaet">'+cell(byShift.spaet)+'</td>'
-        +'<td class="cmt">'+esc(day.comments[g]||"")+'</td>'
-        +'</tr>';
-  });
-  html+='</tbody></table>';
-
-  if(day.info && day.info.trim())
-    html+='<div class="pr-dayinfo"><b>Info Tag:</b> '+esc(day.info)+'</div>';
-
-  html+='</div>';
-  return html;
-}
-
-function buildPrintWeek(wk){
-  const mon=toDate(wk.mondayISO);
-  let html='<section class="pr-week">';
-  html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
-      +'<span class="sub">Woche '+fmtDE(mon)+' – '+fmtDE(addDays(mon,4))+'</span></div>';
-  if(wk.houseInfo && wk.houseInfo.trim())
-    html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+esc(wk.houseInfo)+'</div>';
-  DAYS.forEach((_,di)=>{ html+=buildPrintDay(wk,di); });
-  // Legende
-  html+='<div class="pr-legend">';
-  GROUPS.forEach(g=>{ html+='<span><span class="sw" style="background:'+groupColor(g)+'"></span>'+esc(g)+'</span>'; });
-  html+='<span>[Gruppe] = Gasteinsatz</span></div>';
-  html+='<div class="pr-foot">Erstellt am '+fmtDE(new Date())+' · Read-only Ansicht</div>';
-  html+='</section>';
-  return html;
-}
-
-function doPrint(scope){
-  const root=document.getElementById("printRoot");
-  let keys;
-  if(scope==="all") keys=Object.keys(state.weeks).sort();
-  else keys=[curWeekKey];
-  root.innerHTML=keys.map(k=>buildPrintWeek(state.weeks[k])).join("");
-  // kurze Verzögerung, damit Layout steht
-  setTimeout(()=>{ window.print(); }, 60);
-}
-
-document.getElementById("btnPrint").onclick=()=>{
-  document.getElementById("printScope").value="week";
-  document.getElementById("printDialog").showModal();
+    return week;
+  },
+  assign(day,name,{shift,group,away},staff,groups){
+    const prev=day.assign[name]||{away:"",group:Staff.stammOf(staff,groups,name)};
+    day.assign[name]={
+      shift,
+      group,
+      away: away!==undefined ? away : (prev.away||""),
+    };
+    return day.assign[name];
+  },
+  unassign(day,name){
+    delete day.assign[name];
+  },
+  updateAssignment(day,name,patch){
+    const a=day.assign[name];
+    if(!a) return null;
+    if(patch.shift!==undefined) a.shift=patch.shift;
+    if(patch.group!==undefined) a.group=patch.group;
+    if(patch.away!==undefined) a.away=patch.away;
+    return a;
+  },
+  reset(staff){
+    return {
+      houseInfo:"",
+      days:Constants.DAYS.map(()=>({
+        mode:"Normalbetrieb",
+        info:"",
+        assign:Week.defaultAssign(staff),
+        comments:{},
+      })),
+    };
+  },
+  copyFrom(prev,mondayISO){
+    const copy=JSON.parse(JSON.stringify(prev));
+    copy.mondayISO=mondayISO;
+    return copy;
+  },
+  prevMondayISO(mondayISO){
+    return Dates.iso(Dates.mondayOf(Dates.addDays(Dates.toDate(mondayISO),-7)));
+  },
+  nextMondayISO(mondayISO){
+    return Dates.iso(Dates.mondayOf(Dates.addDays(Dates.toDate(mondayISO),7)));
+  },
 };
-document.getElementById("printCancel").onclick=()=>document.getElementById("printDialog").close();
-document.getElementById("printGo").onclick=()=>{
-  const scope=document.getElementById("printScope").value;
-  document.getElementById("printDialog").close();
-  doPrint(scope);
-};
-// Druckcontainer nach dem Drucken wieder leeren (Speicher/Sauberkeit)
-window.addEventListener("afterprint",()=>{document.getElementById("printRoot").innerHTML="";});
 
-// ---------- init ----------
-(function(){
-  const persisted = readPersistedState();
-  if(persisted){ applyState(persisted); return; }
-  gotoWeek(iso(mondayOf(new Date())));
+// ---------- ViewModel (rein: gemeinsame Projektion für Screen + Print) ----------
+const ViewModel = {
+  personEntry(name,a,staff,groups){
+    const stamm=Staff.stammOf(staff,groups,name);
+    return {
+      name,
+      shift:a.shift,
+      group:a.group,
+      away:a.away||"",
+      stamm,
+      isGuest:a.group!==stamm,
+      awayLabel:a.away ? (Constants.AWAY_LABEL[a.away]||a.away) : null,
+    };
+  },
+
+  forDay(day,staff,groups){
+    const assign=day.assign||{};
+    const assigned=new Set(Object.keys(assign));
+    const pool=Staff.active(staff).filter(s=>!assigned.has(s.name));
+    const cells={};
+    Groups.names(groups).forEach(g=>{
+      cells[g]={frueh:[],mittel:[],spaet:[]};
+    });
+    Object.entries(assign).forEach(([name,a])=>{
+      const entry=ViewModel.personEntry(name,a,staff,groups);
+      const row=cells[a.group];
+      if(!row) return;
+      const bucket=row[a.shift]||row.frueh;
+      bucket.push(entry);
+    });
+    return {
+      mode:day.mode,
+      info:day.info||"",
+      comments:day.comments||{},
+      pool,
+      cells,
+    };
+  },
+};
+
+// ---------- Store (get / mutate / subscribe) ----------
+const Store = (() => {
+  // groups: [{name, color}]
+  // staff: [{name,stamm,shift,active}]
+  // weekKey -> {mondayISO, days:[{mode,info,assign,comments}], houseInfo}
+  let state = { weekStartISO:null, weeks:{}, groups:[], staff:[] };
+  let curWeekKey = null;
+  let curDay = 0;
+  // Ephemeral UI (kein Re-Render)
+  let dragName = null;
+  let dlgName = null;
+  let dlgDay = null;
+
+  const listeners = new Set();
+  let txDepth = 0;
+  let dirty = false;
+
+  function flush(){
+    if(txDepth>0){ dirty=true; return; }
+    dirty=false;
+    listeners.forEach(fn=>fn());
+  }
+
+  function schedule(){
+    dirty=true;
+    if(txDepth===0) flush();
+  }
+
+  return {
+    get(){ return state; },
+    cursor(){ return { weekKey:curWeekKey, day:curDay }; },
+    weekKey(){ return curWeekKey; },
+    dayIndex(){ return curDay; },
+    currentWeek(){ return state.weeks[curWeekKey]; },
+    currentDay(){ return state.weeks[curWeekKey].days[curDay]; },
+
+    subscribe(fn){
+      listeners.add(fn);
+      return ()=>listeners.delete(fn);
+    },
+    /** Explizit neu zeichnen (z.B. nach Dialog-Schließen ohne State-Änderung). */
+    notify(){ schedule(); },
+
+    /** Mehrere Mutationen, ein Notify. */
+    transaction(fn){
+      txDepth++;
+      try { fn(); }
+      finally {
+        txDepth--;
+        if(txDepth===0 && dirty) flush();
+      }
+    },
+
+    /** Domänen-State ändern und View aktualisieren. */
+    mutate(fn){
+      fn(state);
+      schedule();
+    },
+
+    /** Domänen-State ändern ohne Re-Render (Textfelder, Dialog-interne Edits). */
+    mutateQuiet(fn){
+      fn(state);
+    },
+
+    replaceState(next){
+      state = next;
+      schedule();
+    },
+
+    setCursor(weekKey, day){
+      if(weekKey!=null) curWeekKey = weekKey;
+      if(day!=null) curDay = day;
+      schedule();
+    },
+
+    /** Snapshot für Speichern inkl. aktueller Woche. */
+    snapshot(){
+      state.weekStartISO = curWeekKey;
+      return state;
+    },
+
+    setDragName(n){ dragName = n; },
+    getDragName(){ return dragName; },
+    setChipDialog(name, day){ dlgName = name; dlgDay = day; },
+    chipDialog(){ return { name:dlgName, day:dlgDay }; },
+  };
 })();
+
+// ---------- View ----------
+const View = {
+  groupColor(name){
+    return Groups.colorOf(Store.get().groups, name);
+  },
+
+  flash(msg){
+    const f=document.getElementById("flash");
+    f.textContent=msg;
+    f.classList.add("show");
+    setTimeout(()=>f.classList.remove("show"),1400);
+  },
+
+  dayViewModel(day){
+    const s=Store.get();
+    return ViewModel.forDay(day, s.staff, s.groups);
+  },
+
+  render(){
+    const s=Store.get();
+    const { weekKey, day:dayIdx } = Store.cursor();
+    const wk=s.weeks[weekKey];
+    if(!wk) return;
+
+    const mon=Dates.toDate(wk.mondayISO);
+    document.getElementById("weekLabel").textContent =
+      Dates.fmtDE(mon)+" – "+Dates.fmtDE(Dates.addDays(mon,4));
+
+    const tabs=document.getElementById("dayTabs"); tabs.innerHTML="";
+    Constants.DAYS.forEach((dn,i)=>{
+      const t=document.createElement("div");
+      t.className="daytab"+(i===dayIdx?" active":"");
+      t.innerHTML=`${dn} <span class="dnum">${Dates.fmtDE(Dates.addDays(mon,i))}</span>`;
+      t.onclick=()=>Store.setCursor(null, i);
+      tabs.appendChild(t);
+    });
+
+    const day=wk.days[dayIdx];
+    document.getElementById("dayMode").value=day.mode;
+    document.getElementById("dayInfo").value=day.info||"";
+    document.getElementById("houseInfo").value=wk.houseInfo||"";
+
+    const vm=View.dayViewModel(day);
+    View.renderGrid(day,vm,s.groups);
+    View.renderPool(day,vm);
+    View.renderLegend(s.groups);
+  },
+
+  renderGrid(day,vm,groups){
+    const grid=document.getElementById("grid"); grid.innerHTML="";
+    const heads=["Gruppe","Frühschicht","Mittelschicht","Spätschicht","Kommentar"];
+    heads.forEach((h,i)=>{
+      const el=document.createElement("div");
+      el.className="ghead"+(i===0?" rowlbl":"");
+      el.textContent=h;
+      grid.appendChild(el);
+    });
+    Groups.names(groups).forEach(g=>{
+      const lbl=document.createElement("div");
+      lbl.className="g-label"; lbl.style.background=View.groupColor(g); lbl.textContent=g;
+      grid.appendChild(lbl);
+      Constants.SHIFT_KEYS.forEach(sk=>{
+        const cell=document.createElement("div");
+        cell.className="cell "+sk; cell.dataset.group=g; cell.dataset.shift=sk;
+        View.wireDrop(cell);
+        (vm.cells[g][sk]||[]).forEach(entry=>{
+          cell.appendChild(View.makeChip(entry));
+        });
+        grid.appendChild(cell);
+      });
+      const cc=document.createElement("div"); cc.className="commentcol";
+      const ta=document.createElement("textarea");
+      ta.value=vm.comments[g]||""; ta.placeholder="…";
+      ta.oninput=()=>{
+        Store.mutateQuiet(()=>{ Store.currentDay().comments[g]=ta.value; });
+      };
+      cc.appendChild(ta); grid.appendChild(cc);
+    });
+  },
+
+  makeChip(entry){
+    const c=document.createElement("div");
+    c.className="chip"+(entry.isGuest?" guest":"")+(entry.away?(" away-"+entry.away):"");
+    c.style.background=View.groupColor(entry.group);
+    c.draggable=true; c.dataset.name=entry.name;
+    let inner=entry.name;
+    if(entry.isGuest) inner+=` <small>${entry.stamm}</small>`;
+    if(entry.away) inner=`<span class="away"></span>`+inner+` <small>${entry.awayLabel}</small>`;
+    c.innerHTML=inner;
+    c.ondragstart=e=>{e.dataTransfer.setData("text/plain",entry.name);Store.setDragName(entry.name);};
+    c.onclick=()=>ChipDialog.open(entry.name);
+    return c;
+  },
+
+  renderPool(day,vm){
+    const pool=document.getElementById("pool"); pool.innerHTML="";
+    vm.pool.forEach(s=>{
+      const c=document.createElement("div");
+      c.className="chip"; c.style.background=View.groupColor(s.stamm);
+      c.draggable=true; c.dataset.name=s.name;
+      c.innerHTML=s.name+` <small>${s.stamm}</small>`;
+      c.ondragstart=e=>{e.dataTransfer.setData("text/plain",s.name);Store.setDragName(s.name);};
+      pool.appendChild(c);
+    });
+    if(!pool.children.length) pool.innerHTML='<div class="poolnote">Alle eingeteilt.</div>';
+    View.wirePoolDrop();
+  },
+
+  wireDrop(cell){
+    cell.ondragover=e=>{e.preventDefault();cell.classList.add("dragover");};
+    cell.ondragleave=()=>cell.classList.remove("dragover");
+    cell.ondrop=e=>{
+      e.preventDefault();cell.classList.remove("dragover");
+      const name=e.dataTransfer.getData("text/plain")||Store.getDragName();
+      if(!name)return;
+      Store.mutate(s=>{
+        Week.assign(
+          Store.currentDay(),
+          name,
+          {shift:cell.dataset.shift,group:cell.dataset.group},
+          s.staff,
+          s.groups
+        );
+      });
+    };
+  },
+
+  wirePoolDrop(){
+    const aside=document.getElementById("poolAside");
+    aside.ondragover=e=>{e.preventDefault();aside.classList.add("dragover");};
+    aside.ondragleave=e=>{if(!aside.contains(e.relatedTarget))aside.classList.remove("dragover");};
+    aside.ondrop=e=>{
+      e.preventDefault();aside.classList.remove("dragover");
+      const name=e.dataTransfer.getData("text/plain")||Store.getDragName();
+      if(!name) return;
+      Store.mutate(()=>{ Week.unassign(Store.currentDay(), name); });
+    };
+  },
+
+  renderLegend(groups){
+    const l=document.getElementById("legend"); l.innerHTML="";
+    Groups.names(groups).forEach(g=>{
+      const s=document.createElement("span");
+      s.innerHTML=`<span class="sw" style="background:${View.groupColor(g)}"></span>${g}`;
+      l.appendChild(s);
+    });
+    const note=document.createElement("span");
+    note.textContent="Gestrichelte Umrandung = Gasteinsatz (nicht Stammgruppe)";
+    l.appendChild(note);
+  },
+};
+
+// ---------- ChipDialog ----------
+const ChipDialog = {
+  open(name){
+    const day=Store.currentDay();
+    Store.setChipDialog(name, day);
+    const a=day.assign[name];
+    const s=Store.get();
+    const stamm=Staff.stammOf(s.staff,s.groups,name);
+    document.getElementById("dlgName").textContent=name+"  ·  Stammgruppe "+stamm;
+    document.getElementById("dlgShift").value=a.shift;
+    const gsel=document.getElementById("dlgGroup"); gsel.innerHTML="";
+    Groups.names(s.groups).forEach(g=>{
+      const o=document.createElement("option");
+      o.value=g;
+      o.textContent=g+(g===stamm?" (Stamm)":"");
+      gsel.appendChild(o);
+    });
+    gsel.value=a.group;
+    document.getElementById("dlgAway").value=a.away||"";
+    document.getElementById("chipDialog").showModal();
+  },
+
+  wire(){
+    document.getElementById("dlgOk").onclick=()=>{
+      const { name, day } = Store.chipDialog();
+      Store.mutate(()=>{
+        Week.updateAssignment(day, name, {
+          shift:document.getElementById("dlgShift").value,
+          group:document.getElementById("dlgGroup").value,
+          away:document.getElementById("dlgAway").value,
+        });
+      });
+      document.getElementById("chipDialog").close();
+    };
+    document.getElementById("dlgCancel").onclick=()=>document.getElementById("chipDialog").close();
+    document.getElementById("dlgRemove").onclick=()=>{
+      const { name, day } = Store.chipDialog();
+      Store.mutate(()=>{ Week.unassign(day, name); });
+      document.getElementById("chipDialog").close();
+    };
+  },
+};
+
+// ---------- StaffDialog ----------
+const StaffDialog = {
+  open(){
+    const gsel=document.getElementById("newGroup");
+    gsel.innerHTML="";
+    Store.get().groups.forEach(g=>{
+      const o=document.createElement("option");
+      o.value=g.name;o.textContent=g.name;
+      gsel.appendChild(o);
+    });
+    StaffDialog.renderList();
+    document.getElementById("staffDialog").showModal();
+  },
+
+  renderList(){
+    const box=document.getElementById("staffList");box.innerHTML="";
+    const s=Store.get();
+    Staff.all(s.staff).forEach((person,idx)=>{
+      const row=document.createElement("div");
+      row.className="staffrow"+(person.active===false?" inactive":"");
+      const dot=document.createElement("span");dot.className="dot";dot.style.background=View.groupColor(person.stamm);row.appendChild(dot);
+      const nm=document.createElement("span");nm.className="nm";nm.textContent=person.name;row.appendChild(nm);
+      const gs=document.createElement("select");
+      s.groups.forEach(g=>{
+        const o=document.createElement("option");o.value=g.name;o.textContent=g.name;gs.appendChild(o);
+      });
+      gs.value=person.stamm;
+      gs.onchange=()=>{
+        Store.mutateQuiet(()=>{ person.stamm=gs.value; });
+        dot.style.background=View.groupColor(person.stamm);
+      };
+      row.appendChild(gs);
+      const ss=document.createElement("select");
+      Constants.SHIFTS.forEach(([k,l])=>{const o=document.createElement("option");o.value=k;o.textContent=l;ss.appendChild(o);});
+      ss.value=person.shift;
+      ss.onchange=()=>{ Store.mutateQuiet(()=>{ person.shift=ss.value; }); };
+      row.appendChild(ss);
+      if(person.active===false){
+        const b=document.createElement("button");b.textContent="Aktivieren";
+        b.onclick=()=>{
+          Store.mutateQuiet(()=>{ person.active=true; });
+          StaffDialog.renderList();
+        };
+        row.appendChild(b);
+      }else{
+        const b=document.createElement("button");b.textContent="Deaktivieren";
+        b.title="Ab jetzt nicht mehr einplanbar. Bestehende Wochen bleiben unverändert.";
+        b.onclick=()=>{
+          Store.mutateQuiet(()=>{ person.active=false; });
+          StaffDialog.renderList();
+        };
+        row.appendChild(b);
+      }
+      const del=document.createElement("button");del.className="del";del.textContent="Löschen";
+      del.title="Endgültig entfernen (nur möglich, wenn nirgends eingeplant)";
+      del.onclick=()=>{
+        if(Staff.isUsed(s.weeks,person.name)){
+          alert(person.name+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden. Nutze stattdessen 'Deaktivieren'.");
+          return;
+        }
+        if(!confirm(person.name+" endgültig löschen?"))return;
+        Store.mutateQuiet(()=>{ Staff.removeAt(s.staff,idx); });
+        StaffDialog.renderList();
+      };
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+    if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">Noch kein Personal angelegt.</div>';
+  },
+
+  wire(){
+    document.getElementById("btnStaff").onclick=StaffDialog.open;
+    document.getElementById("staffClose").onclick=()=>{
+      document.getElementById("staffDialog").close();
+      Store.notify();
+    };
+    document.getElementById("newAdd").onclick=()=>{
+      const name=document.getElementById("newName").value.trim();
+      if(!name){alert("Bitte einen Namen eingeben.");return;}
+      if(Staff.byName(Store.get().staff,name)){alert("Es gibt bereits eine Person mit diesem Namen.");return;}
+      Store.mutateQuiet(st=>{
+        st.staff.push(Staff.create({
+          name,
+          stamm:document.getElementById("newGroup").value,
+          shift:document.getElementById("newShift").value,
+        }));
+      });
+      document.getElementById("newName").value="";
+      StaffDialog.renderList();
+      View.flash(name+" hinzugefügt");
+    };
+  },
+};
+
+// ---------- GroupsDialog ----------
+const GroupsDialog = {
+  newColor: null,
+
+  open(){
+    GroupsDialog.renderList();
+    GroupsDialog.resetNewColor();
+    document.getElementById("groupsDialog").showModal();
+  },
+
+  resetNewColor(){
+    GroupsDialog.newColor=Groups.defaultColor(Store.get().groups);
+    GroupsDialog.renderNewSwatches();
+  },
+
+  renderSwatches(container, selected, onPick){
+    container.innerHTML="";
+    Constants.GROUP_COLORS.forEach(hex=>{
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="color-swatch"+(hex.toLowerCase()===String(selected).toLowerCase()?" selected":"");
+      b.style.background=hex;
+      b.dataset.color=hex;
+      b.title=hex;
+      b.setAttribute("aria-label","Farbe "+hex);
+      b.onclick=()=>onPick(hex);
+      container.appendChild(b);
+    });
+  },
+
+  renderNewSwatches(){
+    GroupsDialog.renderSwatches(
+      document.getElementById("newGroupColors"),
+      GroupsDialog.newColor,
+      hex=>{ GroupsDialog.newColor=hex; GroupsDialog.renderNewSwatches(); }
+    );
+  },
+
+  renderList(){
+    const s=Store.get();
+    const box=document.getElementById("groupsList");
+    box.innerHTML="";
+    Groups.all(s.groups).forEach(g=>{
+      const name=g.name;
+      const color=Groups.colorOf(s.groups,name);
+      const row=document.createElement("div");
+      row.className="staffrow";
+      row.dataset.group=name;
+      const nm=document.createElement("span");
+      nm.className="nm";
+      nm.textContent=name;
+      row.appendChild(nm);
+      const sw=document.createElement("div");
+      sw.className="color-swatches";
+      GroupsDialog.renderSwatches(sw, color, hex=>{
+        Store.mutateQuiet(st=>{ Groups.setColor(st.groups,name,hex); });
+        GroupsDialog.renderList();
+        GroupsDialog.resetNewColor();
+      });
+      row.appendChild(sw);
+      const del=document.createElement("button");
+      del.className="del";
+      del.textContent="Löschen";
+      del.title="Endgültig entfernen (nur möglich, wenn nirgends verwendet)";
+      del.onclick=()=>{
+        if(Groups.isUsed(s.staff,s.weeks,name)){
+          alert(name+" wird noch verwendet (Stammgruppe, Einteilung oder Kommentar) und kann nicht gelöscht werden.");
+          return;
+        }
+        if(!confirm(name+" endgültig löschen?"))return;
+        Store.mutateQuiet(()=>{ Groups.remove(s.groups,name); });
+        GroupsDialog.renderList();
+        GroupsDialog.resetNewColor();
+      };
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+    if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">Noch keine Gruppen angelegt.</div>';
+  },
+
+  wire(){
+    document.getElementById("btnGroups").onclick=GroupsDialog.open;
+    document.getElementById("groupsClose").onclick=()=>{
+      document.getElementById("groupsDialog").close();
+      Store.notify();
+    };
+    document.getElementById("newGroupAdd").onclick=()=>{
+      const name=document.getElementById("newGroupName").value.trim();
+      if(!name){alert("Bitte einen Namen eingeben.");return;}
+      if(Groups.has(Store.get().groups,name)){alert("Es gibt bereits eine Gruppe mit diesem Namen.");return;}
+      const color=GroupsDialog.newColor || Groups.defaultColor(Store.get().groups);
+      Store.mutateQuiet(st=>{ Groups.add(st.groups,name,color); });
+      document.getElementById("newGroupName").value="";
+      GroupsDialog.renderList();
+      GroupsDialog.resetNewColor();
+      View.flash(name+" hinzugefügt");
+    };
+  },
+};
+
+// ---------- Persistence ----------
+const Persistence = {
+  normalize(raw){
+    if(!raw || typeof raw!=="object") throw new Error("ungültiger Stand");
+    if(!raw.weeks) raw.weeks={};
+    if(!Array.isArray(raw.groups)) raw.groups=[];
+    if(!Array.isArray(raw.staff)) raw.staff=[];
+    return raw;
+  },
+
+  persist(){
+    localStorage.setItem(Constants.STORAGE_KEY, JSON.stringify(Store.snapshot()));
+  },
+
+  read(){
+    const raw = localStorage.getItem(Constants.STORAGE_KEY);
+    if(!raw) return null;
+    try { return Persistence.normalize(JSON.parse(raw)); }
+    catch(err){ console.warn("Gespeicherter Stand ungültig:", err); return null; }
+  },
+
+  apply(loaded){
+    Store.replaceState(loaded);
+    const keys = Object.keys(loaded.weeks||{}).sort();
+    const preferred = loaded.weekStartISO && loaded.weeks[loaded.weekStartISO]
+      ? loaded.weekStartISO
+      : keys[0];
+    if(preferred) App.gotoWeek(preferred);
+    else App.gotoWeek(Dates.iso(Dates.mondayOf(new Date())));
+  },
+
+  async saveAsFile(){
+    const json = JSON.stringify(Store.snapshot(), null, 2);
+    const filename = "dienstplan_"+Store.weekKey()+".json";
+
+    if(typeof window.showSaveFilePicker==="function"){
+      try{
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types:[{description:"JSON",accept:{"application/json":[".json"]}}]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(json);
+        await writable.close();
+        View.flash("Datei gespeichert");
+        return;
+      }catch(err){
+        if(err && err.name==="AbortError") return;
+      }
+    }
+
+    const blob = new Blob([json],{type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    View.flash("Datei gespeichert");
+  },
+
+  wire(){
+    document.getElementById("btnSave").onclick=()=>{
+      Persistence.persist();
+      View.flash("Gespeichert");
+    };
+    document.getElementById("btnSaveAs").onclick=()=>{ Persistence.saveAsFile(); };
+    document.getElementById("btnLoad").onclick=()=>document.getElementById("fileInput").click();
+    document.getElementById("fileInput").onchange=e=>{
+      const f=e.target.files[0];if(!f)return;
+      const r=new FileReader();
+      r.onload=()=>{try{
+        Persistence.apply(Persistence.normalize(JSON.parse(r.result)));
+        View.flash("Geladen");
+      }catch(err){alert("Datei konnte nicht gelesen werden.");}};
+      r.readAsText(f);
+      e.target.value="";
+    };
+  },
+};
+
+// ---------- Print ----------
+const Print = {
+  esc(s){
+    return (s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  },
+
+  personHtml(entry){
+    let cls="pr-person"+(entry.away?(" away "+entry.away):"");
+    let inner=Print.esc(entry.name);
+    if(entry.isGuest) inner+=' <span class="tag">['+Print.esc(entry.stamm)+']</span>';
+    if(entry.away) inner+=' <span class="aw">('+Print.esc(entry.awayLabel)+')</span>';
+    return '<span class="'+cls+'">'+inner+'</span>';
+  },
+
+  buildDay(wk,di,staff,groups){
+    const mon=Dates.toDate(wk.mondayISO);
+    const day=wk.days[di];
+    const vm=ViewModel.forDay(day,staff,groups);
+    const closed=vm.mode==="Schließung";
+    let html='<div class="pr-day">';
+    html+='<div class="pr-dayhead">'
+        +'<span class="dn">'+Constants.DAYS[di]+'</span>'
+        +'<span class="dt">'+Dates.fmtDE(Dates.addDays(mon,di))+'</span>'
+        +'<span class="mode'+(closed?" closed":"")+'">'+Print.esc(vm.mode)+'</span>'
+        +'</div>';
+
+    html+='<table class="pr-tbl"><thead><tr>'
+        +'<th class="grp">Gruppe</th>'
+        +'<th>Frühschicht</th><th>Mittelschicht</th><th>Spätschicht</th>'
+        +'<th class="cmt">Kommentar</th></tr></thead><tbody>';
+
+    Groups.names(groups).forEach(g=>{
+      const byShift=vm.cells[g]||{frueh:[],mittel:[],spaet:[]};
+      const col=View.groupColor(g);
+      const cell=arr=>arr.length?arr.map(Print.personHtml).join(""):'<span class="empty">–</span>';
+      html+='<tr>'
+          +'<td class="grp" style="background:'+col+'">'+Print.esc(g)+'</td>'
+          +'<td class="shift s-frueh">'+cell(byShift.frueh)+'</td>'
+          +'<td class="shift s-mittel">'+cell(byShift.mittel)+'</td>'
+          +'<td class="shift s-spaet">'+cell(byShift.spaet)+'</td>'
+          +'<td class="cmt">'+Print.esc(vm.comments[g]||"")+'</td>'
+          +'</tr>';
+    });
+    html+='</tbody></table>';
+
+    if(vm.info && vm.info.trim())
+      html+='<div class="pr-dayinfo"><b>Info Tag:</b> '+Print.esc(vm.info)+'</div>';
+
+    html+='</div>';
+    return html;
+  },
+
+  buildWeek(wk,staff,groups){
+    const mon=Dates.toDate(wk.mondayISO);
+    let html='<section class="pr-week">';
+    html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
+        +'<span class="sub">Woche '+Dates.fmtDE(mon)+' – '+Dates.fmtDE(Dates.addDays(mon,4))+'</span></div>';
+    if(wk.houseInfo && wk.houseInfo.trim())
+      html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+Print.esc(wk.houseInfo)+'</div>';
+    Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups); });
+    html+='<div class="pr-legend">';
+    Groups.names(groups).forEach(g=>{
+      html+='<span><span class="sw" style="background:'+View.groupColor(g)+'"></span>'+Print.esc(g)+'</span>';
+    });
+    html+='<span>[Gruppe] = Gasteinsatz</span></div>';
+    html+='<div class="pr-foot">Erstellt am '+Dates.fmtDE(new Date())+' · Read-only Ansicht</div>';
+    html+='</section>';
+    return html;
+  },
+
+  doPrint(scope){
+    const root=document.getElementById("printRoot");
+    const {staff,groups,weeks}=Store.get();
+    let keys;
+    if(scope==="all") keys=Object.keys(weeks).sort();
+    else keys=[Store.weekKey()];
+    root.innerHTML=keys.map(k=>Print.buildWeek(weeks[k],staff,groups)).join("");
+    setTimeout(()=>{ window.print(); }, 60);
+  },
+
+  wire(){
+    document.getElementById("btnPrint").onclick=()=>{
+      document.getElementById("printScope").value="week";
+      document.getElementById("printDialog").showModal();
+    };
+    document.getElementById("printCancel").onclick=()=>document.getElementById("printDialog").close();
+    document.getElementById("printGo").onclick=()=>{
+      const scope=document.getElementById("printScope").value;
+      document.getElementById("printDialog").close();
+      Print.doPrint(scope);
+    };
+    window.addEventListener("afterprint",()=>{document.getElementById("printRoot").innerHTML="";});
+  },
+};
+
+// ---------- App (composition root) ----------
+const App = {
+  gotoWeek(mondayISO){
+    Store.transaction(()=>{
+      Store.mutate(s=>{
+        const wk=Week.ensure(s.weeks, mondayISO);
+        Week.fillEmptyDays(wk, s.staff);
+      });
+      Store.setCursor(mondayISO, 0);
+    });
+  },
+
+  wire(){
+    Store.subscribe(()=>View.render());
+
+    document.getElementById("dayMode").onchange=e=>{
+      Store.mutateQuiet(()=>{ Store.currentDay().mode=e.target.value; });
+    };
+    document.getElementById("dayInfo").oninput=e=>{
+      Store.mutateQuiet(()=>{ Store.currentDay().info=e.target.value; });
+    };
+    document.getElementById("houseInfo").oninput=e=>{
+      Store.mutateQuiet(()=>{ Store.currentWeek().houseInfo=e.target.value; });
+    };
+
+    document.getElementById("prevWeek").onclick=()=>{
+      App.gotoWeek(Week.prevMondayISO(Store.weekKey()));
+    };
+    document.getElementById("nextWeek").onclick=()=>{
+      App.gotoWeek(Week.nextMondayISO(Store.weekKey()));
+    };
+
+    document.getElementById("btnResetWeek").onclick=()=>{
+      if(!confirm("Diese Woche auf Standard (alle in Stammgruppe) zurücksetzen?"))return;
+      Store.mutate(s=>{
+        const reset=Week.reset(s.staff);
+        const wk=s.weeks[Store.weekKey()];
+        wk.days=reset.days;
+        wk.houseInfo=reset.houseInfo;
+      });
+    };
+    document.getElementById("btnCopyPrev").onclick=()=>{
+      const prevKey=Week.prevMondayISO(Store.weekKey());
+      const prev=Store.get().weeks[prevKey];
+      if(!prev){alert("Keine Vorwoche vorhanden.");return;}
+      if(!confirm("Aktuelle Woche mit den Daten der Vorwoche überschreiben?"))return;
+      Store.mutate(s=>{
+        s.weeks[Store.weekKey()]=Week.copyFrom(prev, Store.weekKey());
+      });
+    };
+
+    ChipDialog.wire();
+    StaffDialog.wire();
+    GroupsDialog.wire();
+    Persistence.wire();
+    Print.wire();
+  },
+
+  init(){
+    App.wire();
+    const persisted = Persistence.read();
+    if(persisted){ Persistence.apply(persisted); return; }
+    App.gotoWeek(Dates.iso(Dates.mondayOf(new Date())));
+  },
+};
+
+App.init();
 </script>
 </body>
 </html>

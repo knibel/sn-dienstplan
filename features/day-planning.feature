@@ -35,7 +35,7 @@ Funktionalität: Tagesplanung
       | Mittelschicht |
       | Spätschicht   |
 
-  Szenario: Seed-Personal ist beim Start eingeteilt
+  Szenario: Geladenes Personal ist eingeteilt
     Dann ist "Gül" in Gruppe "Mäuse" und Schicht "Frühschicht" eingeteilt
     Und ist "Vivien" in Gruppe "Mäuse" und Schicht "Spätschicht" eingeteilt
     Und ist "Daniel" in Gruppe "Hasen" und Schicht "Frühschicht" eingeteilt

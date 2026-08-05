@@ -13,6 +13,14 @@ let sharedBrowser;
 BeforeAll(async function () {
   fs.mkdirSync(DOWNLOAD_DIR, { recursive: true });
   fs.mkdirSync(REPORT_DIR, { recursive: true });
+
+  // Lokale JSON ist gitignored – für Tests aus der Vorlage anlegen, falls fehlend
+  const localPath = path.resolve(__dirname, "../../dienstplan.local.json");
+  const examplePath = path.resolve(__dirname, "../../dienstplan.local.example.json");
+  if (!fs.existsSync(localPath) && fs.existsSync(examplePath)) {
+    fs.copyFileSync(examplePath, localPath);
+  }
+
   sharedBrowser = await chromium.launch({
     headless: process.env.HEADED !== "1",
   });

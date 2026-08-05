@@ -6,7 +6,7 @@ Funktionalität: Personalverwaltung
   Grundlage:
     Angenommen die Dienstplan-App ist geöffnet
 
-  Szenario: Personal-Dialog öffnen und Seed-Personal sehen
+  Szenario: Personal-Dialog öffnen und geladenes Personal sehen
     Wenn ich den Personal-Dialog öffne
     Dann sehe ich im Personal-Dialog die Person "Vivien"
     Und sehe ich im Personal-Dialog die Person "Beate"
