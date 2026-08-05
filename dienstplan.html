@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dienstplan Spatzennest</title>
+<style>
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --ink:#1d2b3a; --muted:#6b7a8d;
+  --line:#d4dbe3; --line-strong:#b4bfcc;
+  --frueh:#fff8e6; --mittel:#eaf4ff; --spaet:#f0ecfb; --abw:#ffeef0;
+  --hdr:#22384f; --accent:#2f6f4f;
+  --g-maeuse:#e8623c; --g-hasen:#3f8f5b; --g-maeuschen:#c9932b; --g-haeschen:#3d6fb3;
+  --g-springer:#7a56b0; --g-praktikanten:#0d8f9c; --g-leitung:#5a6472;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
+header{background:var(--hdr);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:30}
+header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
+.weeknav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.weeknav button,.toolbar button{cursor:pointer;border:1px solid var(--line-strong);background:#fff;color:var(--ink);border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit}
+.weeknav button:hover,.toolbar button:hover{background:#f0f3f7}
+.weeknav .weeklabel{font-size:13px;font-weight:600;min-width:230px;text-align:center;color:#fff}
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:44px;z-index:29}
+.toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.toolbar .hint{color:var(--muted);font-size:11.5px;margin-left:auto}
+.layout{display:flex;gap:0;align-items:flex-start}
+.pool{width:210px;flex:0 0 210px;background:var(--panel);border-right:1px solid var(--line);padding:10px;position:sticky;top:92px;max-height:calc(100vh - 92px);overflow-y:auto}
+.pool h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
+.pool .poolnote{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4}
+#pool{min-height:60px}
+.pool.dragover{outline:2px dashed var(--muted);outline-offset:-4px}
+.main{flex:1;padding:14px;overflow-x:auto}
+.daytabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.daytab{padding:6px 14px;border:1px solid var(--line-strong);background:#fff;border-radius:7px 7px 0 0;cursor:pointer;font-weight:600;font-size:12.5px}
+.daytab.active{background:var(--hdr);color:#fff;border-color:var(--hdr)}
+.daytab .dnum{font-weight:400;opacity:.7;font-size:11px}
+.daymeta{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.daymeta label{font-size:11.5px;color:var(--muted)}
+.daymeta select{font-family:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line-strong);border-radius:5px}
+
+.grid{display:grid;grid-template-columns:150px 1fr 1fr 1fr 150px;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:#fff;min-width:900px}
+.grid .ghead{background:#f3f6f9;font-weight:700;padding:8px 10px;font-size:12px;border-bottom:2px solid var(--line-strong);border-right:1px solid var(--line);text-align:center}
+.grid .ghead.rowlbl{text-align:left}
+.grouprow{display:contents}
+.g-label{padding:8px 10px;font-weight:700;color:#fff;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;font-size:12.5px;letter-spacing:.2px}
+.cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:52px;padding:5px;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start;transition:background .12s}
+.cell.frueh{background:var(--frueh)} .cell.mittel{background:var(--mittel)} .cell.spaet{background:var(--spaet)}
+.cell.abw{background:var(--abw)}
+.cell.dragover{outline:2px dashed var(--accent);outline-offset:-3px;background:#e4f2ea}
+.cell:last-child{border-right:none}
+
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:14px;font-size:12px;color:#fff;cursor:grab;user-select:none;box-shadow:0 1px 2px rgba(0,0,0,.15);border:1.5px solid rgba(255,255,255,.25)}
+.chip:active{cursor:grabbing}
+.chip .away{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.35)}
+.chip.guest{border-style:dashed;border-color:#fff}
+.chip.away-krank{opacity:.55;text-decoration:line-through}
+.chip.away-urlaub{opacity:.55}
+.chip small{font-size:9px;opacity:.85;background:rgba(0,0,0,.22);padding:1px 4px;border-radius:6px}
+
+.commentcol{padding:6px;border-bottom:1px solid var(--line);background:#fafcfe}
+.commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:vertical;min-height:44px;background:#fff}
+
+.house{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.house .box{background:#fff;border:1px solid var(--line-strong);border-radius:8px;padding:10px}
+.house h4{margin:0 0 6px;font-size:12px;color:var(--hdr)}
+.house textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:12px;padding:6px;resize:vertical;min-height:60px}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted);align-items:center}
+.legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+
+dialog{border:none;border-radius:10px;padding:0;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:340px}
+dialog .dlg{padding:16px}
+dialog h3{margin:0 0 12px;font-size:14px}
+dialog label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+dialog select,dialog input{width:100%;font-family:inherit;font-size:13px;padding:6px;border:1px solid var(--line-strong);border-radius:6px}
+dialog .btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+dialog .btns button{cursor:pointer;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:12px;border:1px solid var(--line-strong);background:#fff}
+dialog .btns .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
+.staffrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.staffrow .dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px}
+.staffrow .nm{flex:1;font-weight:600}
+.staffrow.inactive .nm{opacity:.45;text-decoration:line-through;font-weight:400}
+.staffrow select{font-family:inherit;font-size:11.5px;padding:2px 4px;border:1px solid var(--line-strong);border-radius:4px}
+.staffrow button{cursor:pointer;font-size:11px;border:1px solid var(--line-strong);background:#fff;border-radius:5px;padding:3px 8px}
+.staffrow button.del{color:#b3341f;border-color:#e0b0a8}
+.saved-flash{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
+.saved-flash.show{opacity:1}
+
+/* ===================== PRINT / PDF ===================== */
+/* Druckcontainer wird nur beim Drucken sichtbar; App-UI wird komplett ausgeblendet. */
+#printRoot{display:none}
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  html,body{background:#fff!important;margin:0;padding:0}
+  /* Gesamte interaktive App verstecken */
+  body>header,body>.toolbar,body>.layout,body>dialog,body>.saved-flash{display:none!important}
+  #printRoot{display:block!important}
+
+  .pr-week{page-break-after:always}
+  .pr-week:last-child{page-break-after:auto}
+  .pr-day{page-break-inside:avoid;break-inside:avoid;margin:0 0 6mm}
+  .pr-day:last-child{margin-bottom:0}
+
+  .pr-weekhead{display:flex;justify-content:space-between;align-items:baseline;
+    border-bottom:2px solid #22384f;padding-bottom:3px;margin-bottom:6px}
+  .pr-weekhead h1{font-size:15pt;margin:0;color:#22384f}
+  .pr-weekhead .sub{font-size:9pt;color:#555}
+
+  .pr-houseinfo{font-size:8.5pt;background:#f3f6f9;border:1px solid #b4bfcc;
+    border-radius:4px;padding:4px 8px;margin-bottom:6px}
+  .pr-houseinfo b{color:#22384f}
+
+  .pr-dayhead{display:flex;align-items:baseline;gap:10px;margin-bottom:2px}
+  .pr-dayhead .dn{font-size:11pt;font-weight:700;color:#1d2b3a}
+  .pr-dayhead .dt{font-size:9pt;color:#666}
+  .pr-dayhead .mode{font-size:8pt;color:#fff;background:#5a6472;border-radius:3px;padding:1px 6px}
+  .pr-dayhead .mode.closed{background:#b3341f}
+
+  table.pr-tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.5pt}
+  table.pr-tbl th,table.pr-tbl td{border:1px solid #b4bfcc;padding:3px 5px;vertical-align:top;text-align:left}
+  table.pr-tbl thead th{background:#22384f;color:#fff;font-size:8pt;font-weight:600;text-align:center}
+  table.pr-tbl thead th.grp{text-align:left;width:15%}
+  table.pr-tbl thead th.cmt{width:20%}
+  table.pr-tbl td.grp{font-weight:700;color:#fff;width:15%;white-space:nowrap}
+  table.pr-tbl td.shift{width:21.66%}
+  table.pr-tbl td.cmt{width:20%;font-size:8pt;color:#333}
+  /* Schichtspalten dezent einfärben passend zur Bildschirmansicht */
+  table.pr-tbl td.s-frueh{background:#fff8e6}
+  table.pr-tbl td.s-mittel{background:#eaf4ff}
+  table.pr-tbl td.s-spaet{background:#f0ecfb}
+
+  .pr-person{display:inline;white-space:nowrap}
+  .pr-person + .pr-person::before{content:", "}
+  .pr-person.away{color:#999}
+  .pr-person.away.krank{text-decoration:line-through}
+  .pr-person .tag{font-size:7pt;color:#666}
+  .pr-person .aw{font-size:7pt;color:#b3341f;font-weight:600}
+  td.empty{color:#bbb}
+
+  .pr-dayinfo{font-size:8pt;color:#333;margin-top:2px}
+  .pr-dayinfo b{color:#22384f}
+
+  .pr-legend{margin-top:4px;font-size:7.5pt;color:#555;display:flex;gap:10px;flex-wrap:wrap}
+  .pr-legend .sw{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:3px}
+
+  .pr-foot{margin-top:5mm;font-size:7pt;color:#888;text-align:right}
+
+  /* Farben im Druck erzwingen */
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐣 Dienstplan Spatzennest</h1>
+  <div class="weeknav">
+    <button id="prevWeek">‹ Woche</button>
+    <span class="weeklabel" id="weekLabel"></span>
+    <button id="nextWeek">Woche ›</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button id="btnSave">💾 Speichern</button>
+  <button id="btnSaveAs">💾 Speichern unter…</button>
+  <button id="btnLoad">📂 Laden</button>
+  <input type="file" id="fileInput" accept=".json" style="display:none">
+  <span class="sep"></span>
+  <button id="btnPrint">🖨 Drucken / PDF</button>
+  <span class="sep"></span>
+  <button id="btnCopyPrev">⧉ Vorwoche kopieren</button>
+  <button id="btnResetWeek">↺ Woche zurücksetzen</button>
+  <span class="sep"></span>
+  <button id="btnStaff">👥 Personal</button>
+  <span class="hint">Mitarbeiter per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
+</div>
+
+<div class="layout">
+  <aside class="pool" id="poolAside">
+    <h3>Nicht eingeteilt</h3>
+    <div class="poolnote">Ziehe Personen in eine Zelle. Aus einer Zelle zurück hierher zieht sie wieder heraus.</div>
+    <div id="pool"></div>
+  </aside>
+  <main class="main">
+    <div class="daytabs" id="dayTabs"></div>
+    <div class="daymeta">
+      <label>Modus: </label>
+      <select id="dayMode">
+        <option>Normalbetrieb</option>
+        <option>Schließung</option>
+      </select>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="legend" id="legend"></div>
+    <div class="house">
+      <div class="box"><h4>Info Kita (ganzes Haus)</h4><textarea id="houseInfo" placeholder="Termine, Besonderheiten für das ganze Haus …"></textarea></div>
+      <div class="box"><h4>Info Tag</h4><textarea id="dayInfo" placeholder="Notizen zu diesem Tag …"></textarea></div>
+    </div>
+  </main>
+</div>
+
+<dialog id="chipDialog"><div class="dlg">
+  <h3 id="dlgName"></h3>
+  <label>Schicht</label>
+  <select id="dlgShift">
+    <option value="frueh">Frühschicht</option>
+    <option value="mittel">Mittelschicht</option>
+    <option value="spaet">Spätschicht</option>
+  </select>
+  <label>Gruppe (Einsatz)</label>
+  <select id="dlgGroup"></select>
+  <label>Abwesenheit</label>
+  <select id="dlgAway">
+    <option value="">— anwesend —</option>
+    <option value="krank">krank</option>
+    <option value="urlaub">Urlaub</option>
+    <option value="sonstiges">Sonstiges</option>
+  </select>
+  <div class="btns">
+    <button id="dlgRemove" class="danger">Aus Plan nehmen</button>
+    <button id="dlgCancel">Abbrechen</button>
+    <button id="dlgOk" class="primary">Übernehmen</button>
+  </div>
+</div></dialog>
+
+<dialog id="staffDialog"><div class="dlg" style="max-width:none;width:440px">
+  <h3>Personal verwalten</h3>
+  <div id="staffList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
+  <div style="border-top:1px solid var(--line);padding-top:10px">
+    <strong style="font-size:12px">Neue Person</strong>
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+      <input id="newName" placeholder="Name" style="flex:1;min-width:110px">
+      <select id="newGroup" style="flex:1;min-width:110px"></select>
+      <select id="newShift" style="width:120px">
+        <option value="frueh">Frühschicht</option>
+        <option value="mittel">Mittelschicht</option>
+        <option value="spaet">Spätschicht</option>
+      </select>
+      <button id="newAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
+    </div>
+  </div>
+  <div class="btns"><button id="staffClose" class="primary">Fertig</button></div>
+</div></dialog>
+
+<div class="saved-flash" id="flash"></div>
+
+<!-- Druck-/PDF-Auswahl -->
+<dialog id="printDialog"><div class="dlg">
+  <h3>PDF / Drucken</h3>
+  <label>Umfang</label>
+  <select id="printScope">
+    <option value="week">Nur aktuelle Woche</option>
+    <option value="all">Alle erfassten Wochen</option>
+  </select>
+  <div class="btns">
+    <button id="printCancel">Abbrechen</button>
+    <button id="printGo" class="primary">PDF erstellen</button>
+  </div>
+</div></dialog>
+
+<!-- Read-only Druckansicht (nur beim Drucken sichtbar) -->
+<div id="printRoot"></div>
+
+<script>
+// ---------- Stammdaten (aus deiner Vorlage extrahiert) ----------
+const GROUPS = ["Mäuse","Hasen","Mäuschen","Häschen","Springer","Praktikanten/-innen","Leitung"];
+const GROUP_VAR = {
+  "Mäuse":"--g-maeuse","Hasen":"--g-hasen","Mäuschen":"--g-maeuschen","Häschen":"--g-haeschen",
+  "Springer":"--g-springer","Praktikanten/-innen":"--g-praktikanten","Leitung":"--g-leitung"
+};
+const SHIFTS = [["frueh","Frühschicht"],["mittel","Mittelschicht"],["spaet","Spätschicht"]];
+const AWAY_LABEL = {krank:"krank",urlaub:"Urlaub",sonstiges:"Sonst."};
+
+// Anfangs-Mitarbeiter (aus der Vorlage). Werden beim ersten Start in den State kopiert
+// und ab dann dort (und in der gespeicherten Datei) verwaltet.
+const STAFF_SEED = [
+  {name:"Vivien",stamm:"Mäuse",shift:"spaet"},
+  {name:"Gül",stamm:"Mäuse",shift:"frueh"},
+  {name:"Chantal",stamm:"Mäuse",shift:"frueh"},
+  {name:"Daniela",stamm:"Hasen",shift:"spaet"},
+  {name:"Barbara",stamm:"Hasen",shift:"mittel"},
+  {name:"Daniel",stamm:"Hasen",shift:"frueh"},
+  {name:"Sabrina",stamm:"Mäuschen",shift:"spaet"},
+  {name:"Melli",stamm:"Mäuschen",shift:"mittel"},
+  {name:"Lena",stamm:"Mäuschen",shift:"frueh"},
+  {name:"Thomas",stamm:"Häschen",shift:"spaet"},
+  {name:"Maria",stamm:"Häschen",shift:"mittel"},
+  {name:"Viktoria",stamm:"Häschen",shift:"frueh"},
+  {name:"Birgit",stamm:"Springer",shift:"frueh"},
+  {name:"Beate",stamm:"Leitung",shift:"frueh"},
+].map(s=>({...s,active:true}));
+const DAYS = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"];
+
+// ---------- State ----------
+// staff: [{name,stamm,shift,active}]
+// weekKey -> {mondayISO, days:[{mode,info,assign:{name:{shift,group,away}}, comments:{group:txt}}], houseInfo}
+let state = { weekStartISO:null, weeks:{}, staff:JSON.parse(JSON.stringify(STAFF_SEED)) };
+
+// Zugriffshelfer auf den Personalstamm im State
+function allStaff(){ return state.staff||[]; }              // inkl. deaktivierte
+function activeStaff(){ return allStaff().filter(s=>s.active!==false); }
+function staffByName(n){ return allStaff().find(s=>s.name===n); }
+function stammOf(n){ const s=staffByName(n); return s?s.stamm:GROUPS[0]; }
+let curWeekKey, curDay=0;
+
+function toDate(d){if(typeof d==="string"){const p=d.slice(0,10).split("-");return new Date(+p[0],+p[1]-1,+p[2]);}return new Date(d);}
+function mondayOf(d){const x=toDate(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);x.setHours(0,0,0,0);return x;}
+function iso(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return y+"-"+m+"-"+day;}
+function fmtDE(d){return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+
+function blankWeek(mondayISO){
+  return {mondayISO, houseInfo:"", days:DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:{},comments:{}}))};
+}
+function ensureWeek(mondayISO){
+  if(!state.weeks[mondayISO]) state.weeks[mondayISO]=blankWeek(mondayISO);
+  return state.weeks[mondayISO];
+}
+function defaultAssignForDay(){
+  // default: everyone in Stammgruppe with default shift
+  const a={};
+  activeStaff().forEach(s=>{ a[s.name]={shift:s.shift,group:s.stamm,away:""}; });
+  return a;
+}
+
+// ---------- Rendering ----------
+function groupColor(g){return getComputedStyle(document.documentElement).getPropertyValue(GROUP_VAR[g]||"--g-leitung").trim();}
+
+function render(){
+  const wk=state.weeks[curWeekKey];
+  const mon=toDate(wk.mondayISO);
+  document.getElementById("weekLabel").textContent =
+    fmtDE(mon)+" – "+fmtDE(addDays(mon,4));
+  // day tabs
+  const tabs=document.getElementById("dayTabs"); tabs.innerHTML="";
+  DAYS.forEach((dn,i)=>{
+    const t=document.createElement("div");
+    t.className="daytab"+(i===curDay?" active":"");
+    t.innerHTML=`${dn} <span class="dnum">${fmtDE(addDays(mon,i))}</span>`;
+    t.onclick=()=>{curDay=i;render();};
+    tabs.appendChild(t);
+  });
+  const day=wk.days[curDay];
+  document.getElementById("dayMode").value=day.mode;
+  document.getElementById("dayInfo").value=day.info||"";
+  document.getElementById("houseInfo").value=wk.houseInfo||"";
+
+  renderGrid(day);
+  renderPool(day);
+  renderLegend();
+}
+
+function renderGrid(day){
+  const grid=document.getElementById("grid"); grid.innerHTML="";
+  const heads=["Gruppe","Frühschicht","Mittelschicht","Spätschicht","Kommentar"];
+  heads.forEach((h,i)=>{const el=document.createElement("div");el.className="ghead"+(i===0?" rowlbl":"");el.textContent=h;grid.appendChild(el);});
+  GROUPS.forEach(g=>{
+    const lbl=document.createElement("div");
+    lbl.className="g-label"; lbl.style.background=groupColor(g); lbl.textContent=g;
+    grid.appendChild(lbl);
+    SHIFTS.forEach(([sk])=>{
+      const cell=document.createElement("div");
+      cell.className="cell "+sk; cell.dataset.group=g; cell.dataset.shift=sk;
+      wireDrop(cell,day);
+      // chips whose assignment matches this group+shift and not away
+      Object.entries(day.assign).forEach(([name,a])=>{
+        if(a.group===g && a.shift===sk){ cell.appendChild(makeChip(name,a,day)); }
+      });
+      grid.appendChild(cell);
+    });
+    // comment column
+    const cc=document.createElement("div"); cc.className="commentcol";
+    const ta=document.createElement("textarea");
+    ta.value=day.comments[g]||""; ta.placeholder="…";
+    ta.oninput=()=>{day.comments[g]=ta.value;};
+    cc.appendChild(ta); grid.appendChild(cc);
+  });
+}
+
+function makeChip(name,a,day){
+  const c=document.createElement("div");
+  const stamm=stammOf(name);
+  c.className="chip"+(a.group!==stamm?" guest":"")+(a.away?(" away-"+a.away):"");
+  c.style.background=groupColor(a.group);
+  c.draggable=true; c.dataset.name=name;
+  let inner=name;
+  if(a.group!==stamm) inner+=` <small>${stamm}</small>`;
+  if(a.away) inner=`<span class="away"></span>`+inner+` <small>${AWAY_LABEL[a.away]}</small>`;
+  c.innerHTML=inner;
+  c.ondragstart=e=>{e.dataTransfer.setData("text/plain",name);dragName=name;};
+  c.onclick=()=>openChipDialog(name,day);
+  return c;
+}
+
+function renderPool(day){
+  const pool=document.getElementById("pool"); pool.innerHTML="";
+  const assigned=new Set(Object.keys(day.assign));
+  activeStaff().filter(s=>!assigned.has(s.name)).forEach(s=>{
+    const c=document.createElement("div");
+    c.className="chip"; c.style.background=groupColor(s.stamm);
+    c.draggable=true; c.dataset.name=s.name;
+    c.innerHTML=s.name+` <small>${s.stamm}</small>`;
+    c.ondragstart=e=>{e.dataTransfer.setData("text/plain",s.name);dragName=s.name;};
+    pool.appendChild(c);
+  });
+  if(!pool.children.length) pool.innerHTML='<div class="poolnote">Alle eingeteilt.</div>';
+  wirePoolDrop(pool,day);
+}
+
+let dragName=null;
+function wireDrop(cell,day){
+  cell.ondragover=e=>{e.preventDefault();cell.classList.add("dragover");};
+  cell.ondragleave=()=>cell.classList.remove("dragover");
+  cell.ondrop=e=>{
+    e.preventDefault();cell.classList.remove("dragover");
+    const name=e.dataTransfer.getData("text/plain")||dragName;
+    if(!name)return;
+    const prev=day.assign[name]||{away:"",group:stammOf(name)};
+    day.assign[name]={shift:cell.dataset.shift,group:cell.dataset.group,away:prev.away||""};
+    render();
+  };
+}
+function wirePoolDrop(pool,day){
+  const aside=document.getElementById("poolAside");
+  aside.ondragover=e=>{e.preventDefault();aside.classList.add("dragover");};
+  aside.ondragleave=e=>{if(!aside.contains(e.relatedTarget))aside.classList.remove("dragover");};
+  aside.ondrop=e=>{
+    e.preventDefault();aside.classList.remove("dragover");
+    const name=e.dataTransfer.getData("text/plain")||dragName;
+    if(name){delete day.assign[name];render();}
+  };
+}
+
+function renderLegend(){
+  const l=document.getElementById("legend"); l.innerHTML="";
+  GROUPS.forEach(g=>{
+    const s=document.createElement("span");
+    s.innerHTML=`<span class="sw" style="background:${groupColor(g)}"></span>${g}`;
+    l.appendChild(s);
+  });
+  const note=document.createElement("span");
+  note.textContent="Gestrichelte Umrandung = Gasteinsatz (nicht Stammgruppe)";
+  l.appendChild(note);
+}
+
+// ---------- Chip dialog ----------
+let dlgName=null,dlgDay=null;
+function openChipDialog(name,day){
+  dlgName=name;dlgDay=day;
+  const a=day.assign[name];
+  document.getElementById("dlgName").textContent=name+"  ·  Stammgruppe "+stammOf(name);
+  document.getElementById("dlgShift").value=a.shift;
+  const gsel=document.getElementById("dlgGroup"); gsel.innerHTML="";
+  GROUPS.forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g+(g===stammOf(name)?" (Stamm)":"");gsel.appendChild(o);});
+  gsel.value=a.group;
+  document.getElementById("dlgAway").value=a.away||"";
+  document.getElementById("chipDialog").showModal();
+}
+document.getElementById("dlgOk").onclick=()=>{
+  const a=dlgDay.assign[dlgName];
+  a.shift=document.getElementById("dlgShift").value;
+  a.group=document.getElementById("dlgGroup").value;
+  a.away=document.getElementById("dlgAway").value;
+  document.getElementById("chipDialog").close();render();
+};
+document.getElementById("dlgCancel").onclick=()=>document.getElementById("chipDialog").close();
+document.getElementById("dlgRemove").onclick=()=>{delete dlgDay.assign[dlgName];document.getElementById("chipDialog").close();render();};
+
+// ---------- Personalverwaltung ----------
+function openStaffDialog(){
+  const gsel=document.getElementById("newGroup");
+  if(!gsel.options.length){GROUPS.forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g;gsel.appendChild(o);});}
+  renderStaffList();
+  document.getElementById("staffDialog").showModal();
+}
+function renderStaffList(){
+  const box=document.getElementById("staffList");box.innerHTML="";
+  allStaff().forEach((s,idx)=>{
+    const row=document.createElement("div");
+    row.className="staffrow"+(s.active===false?" inactive":"");
+    // color dot
+    const dot=document.createElement("span");dot.className="dot";dot.style.background=groupColor(s.stamm);row.appendChild(dot);
+    const nm=document.createElement("span");nm.className="nm";nm.textContent=s.name;row.appendChild(nm);
+    // group select
+    const gs=document.createElement("select");
+    GROUPS.forEach(g=>{const o=document.createElement("option");o.value=g;o.textContent=g;gs.appendChild(o);});
+    gs.value=s.stamm; gs.onchange=()=>{s.stamm=gs.value;dot.style.background=groupColor(s.stamm);};
+    row.appendChild(gs);
+    // shift select
+    const ss=document.createElement("select");
+    SHIFTS.forEach(([k,l])=>{const o=document.createElement("option");o.value=k;o.textContent=l;ss.appendChild(o);});
+    ss.value=s.shift; ss.onchange=()=>{s.shift=ss.value;};
+    row.appendChild(ss);
+    // activate / deactivate
+    if(s.active===false){
+      const b=document.createElement("button");b.textContent="Aktivieren";
+      b.onclick=()=>{s.active=true;renderStaffList();};row.appendChild(b);
+    }else{
+      const b=document.createElement("button");b.textContent="Deaktivieren";b.title="Ab jetzt nicht mehr einplanbar. Bestehende Wochen bleiben unverändert.";
+      b.onclick=()=>{s.active=false;renderStaffList();};row.appendChild(b);
+    }
+    // hard delete (only if never used anywhere)
+    const del=document.createElement("button");del.className="del";del.textContent="Löschen";
+    del.title="Endgültig entfernen (nur möglich, wenn nirgends eingeplant)";
+    del.onclick=()=>{
+      if(isStaffUsed(s.name)){alert(s.name+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden. Nutze stattdessen 'Deaktivieren'.");return;}
+      if(!confirm(s.name+" endgültig löschen?"))return;
+      state.staff.splice(idx,1);renderStaffList();
+    };
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+  if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">Noch kein Personal angelegt.</div>';
+}
+function isStaffUsed(name){
+  return Object.values(state.weeks).some(wk=>wk.days.some(d=>d.assign && (name in d.assign)));
+}
+document.getElementById("btnStaff").onclick=openStaffDialog;
+document.getElementById("staffClose").onclick=()=>{document.getElementById("staffDialog").close();render();};
+document.getElementById("newAdd").onclick=()=>{
+  const name=document.getElementById("newName").value.trim();
+  if(!name){alert("Bitte einen Namen eingeben.");return;}
+  if(staffByName(name)){alert("Es gibt bereits eine Person mit diesem Namen.");return;}
+  state.staff.push({name,stamm:document.getElementById("newGroup").value,shift:document.getElementById("newShift").value,active:true});
+  document.getElementById("newName").value="";
+  renderStaffList();flash(name+" hinzugefügt");
+};
+
+// ---------- day meta ----------
+document.getElementById("dayMode").onchange=e=>{state.weeks[curWeekKey].days[curDay].mode=e.target.value;};
+document.getElementById("dayInfo").oninput=e=>{state.weeks[curWeekKey].days[curDay].info=e.target.value;};
+document.getElementById("houseInfo").oninput=e=>{state.weeks[curWeekKey].houseInfo=e.target.value;};
+
+// ---------- week nav ----------
+function gotoWeek(mondayISO){
+  ensureWeek(mondayISO);
+  // pre-fill assignment on first visit if all days empty
+  const wk=state.weeks[mondayISO];
+  wk.days.forEach(d=>{ if(Object.keys(d.assign).length===0) d.assign=defaultAssignForDay(); });
+  curWeekKey=mondayISO;curDay=0;render();
+}
+document.getElementById("prevWeek").onclick=()=>{const m=addDays(toDate(curWeekKey),-7);gotoWeek(iso(mondayOf(m)));};
+document.getElementById("nextWeek").onclick=()=>{const m=addDays(toDate(curWeekKey),7);gotoWeek(iso(mondayOf(m)));};
+
+document.getElementById("btnResetWeek").onclick=()=>{
+  if(!confirm("Diese Woche auf Standard (alle in Stammgruppe) zurücksetzen?"))return;
+  const wk=state.weeks[curWeekKey];
+  wk.days=DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:defaultAssignForDay(),comments:{}}));
+  wk.houseInfo="";render();
+};
+document.getElementById("btnCopyPrev").onclick=()=>{
+  const prevKey=iso(mondayOf(addDays(toDate(curWeekKey),-7)));
+  const prev=state.weeks[prevKey];
+  if(!prev){alert("Keine Vorwoche vorhanden.");return;}
+  if(!confirm("Aktuelle Woche mit den Daten der Vorwoche überschreiben?"))return;
+  state.weeks[curWeekKey]=JSON.parse(JSON.stringify(prev));
+  state.weeks[curWeekKey].mondayISO=curWeekKey;render();
+};
+
+// ---------- save / load ----------
+// Fester Speicherplatz im Browser (wird bei jedem Speichern überschrieben).
+const STORAGE_KEY = "dienstplan_spatzennest";
+
+function flash(msg){const f=document.getElementById("flash");f.textContent=msg;f.classList.add("show");setTimeout(()=>f.classList.remove("show"),1400);}
+
+function normalizeLoadedState(raw){
+  if(!raw || typeof raw!=="object") throw new Error("ungültiger Stand");
+  if(!raw.weeks) raw.weeks={};
+  if(!raw.staff||!raw.staff.length){
+    // Alte Datei ohne Personalstamm: aus Seed + evtl. vorkommenden Namen rekonstruieren
+    raw.staff=JSON.parse(JSON.stringify(STAFF_SEED));
+    const known=new Set(raw.staff.map(s=>s.name));
+    Object.values(raw.weeks).forEach(wk=>(wk.days||[]).forEach(d=>Object.entries(d.assign||{}).forEach(([n,a])=>{
+      if(!known.has(n)){known.add(n);raw.staff.push({name:n,stamm:a.group||GROUPS[0],shift:a.shift||"frueh",active:true});}
+    })));
+  }
+  return raw;
+}
+
+function persistState(){
+  state.weekStartISO = curWeekKey;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function readPersistedState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return null;
+  try { return normalizeLoadedState(JSON.parse(raw)); }
+  catch(err){ console.warn("Gespeicherter Stand ungültig:", err); return null; }
+}
+
+function applyState(loaded){
+  state = loaded;
+  const keys = Object.keys(state.weeks||{}).sort();
+  const preferred = state.weekStartISO && state.weeks[state.weekStartISO]
+    ? state.weekStartISO
+    : keys[0];
+  if(preferred) gotoWeek(preferred);
+  else gotoWeek(iso(mondayOf(new Date())));
+}
+
+document.getElementById("btnSave").onclick=()=>{
+  persistState();
+  flash("Gespeichert");
+};
+
+async function saveStateAsFile(){
+  state.weekStartISO = curWeekKey;
+  const json = JSON.stringify(state, null, 2);
+  const filename = "dienstplan_"+curWeekKey+".json";
+
+  if(typeof window.showSaveFilePicker==="function"){
+    try{
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types:[{description:"JSON",accept:{"application/json":[".json"]}}]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(json);
+      await writable.close();
+      flash("Datei gespeichert");
+      return;
+    }catch(err){
+      if(err && err.name==="AbortError") return;
+      // Fallback: Download, falls der Dateidialog scheitert
+    }
+  }
+
+  const blob = new Blob([json],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  flash("Datei gespeichert");
+}
+
+document.getElementById("btnSaveAs").onclick=()=>{ saveStateAsFile(); };
+document.getElementById("btnLoad").onclick=()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    applyState(normalizeLoadedState(JSON.parse(r.result)));
+    flash("Geladen");
+  }catch(err){alert("Datei konnte nicht gelesen werden.");}};
+  r.readAsText(f);
+  e.target.value="";
+};
+
+// ---------- PDF / Print (read-only Ansicht) ----------
+function esc(s){return (s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+function buildPrintDay(wk,di){
+  const mon=toDate(wk.mondayISO);
+  const day=wk.days[di];
+  const closed=day.mode==="Schließung";
+  let html='<div class="pr-day">';
+  html+='<div class="pr-dayhead">'
+      +'<span class="dn">'+DAYS[di]+'</span>'
+      +'<span class="dt">'+fmtDE(addDays(mon,di))+'</span>'
+      +'<span class="mode'+(closed?" closed":"")+'">'+esc(day.mode)+'</span>'
+      +'</div>';
+
+  html+='<table class="pr-tbl"><thead><tr>'
+      +'<th class="grp">Gruppe</th>'
+      +'<th>Frühschicht</th><th>Mittelschicht</th><th>Spätschicht</th>'
+      +'<th class="cmt">Kommentar</th></tr></thead><tbody>';
+
+  GROUPS.forEach(g=>{
+    const byShift={frueh:[],mittel:[],spaet:[]};
+    Object.entries(day.assign).forEach(([name,a])=>{
+      if(a.group!==g)return;
+      const stamm=stammOf(name);
+      let cls="pr-person"+(a.away?(" away "+a.away):"");
+      let inner=esc(name);
+      if(a.group!==stamm) inner+=' <span class="tag">['+esc(stamm)+']</span>';
+      if(a.away) inner+=' <span class="aw">('+esc(AWAY_LABEL[a.away]||a.away)+')</span>';
+      (byShift[a.shift]||byShift.frueh).push('<span class="'+cls+'">'+inner+'</span>');
+    });
+    const col=groupColor(g);
+    const cell=arr=>arr.length?arr.join(""):'<span class="empty">–</span>';
+    html+='<tr>'
+        +'<td class="grp" style="background:'+col+'">'+esc(g)+'</td>'
+        +'<td class="shift s-frueh">'+cell(byShift.frueh)+'</td>'
+        +'<td class="shift s-mittel">'+cell(byShift.mittel)+'</td>'
+        +'<td class="shift s-spaet">'+cell(byShift.spaet)+'</td>'
+        +'<td class="cmt">'+esc(day.comments[g]||"")+'</td>'
+        +'</tr>';
+  });
+  html+='</tbody></table>';
+
+  if(day.info && day.info.trim())
+    html+='<div class="pr-dayinfo"><b>Info Tag:</b> '+esc(day.info)+'</div>';
+
+  html+='</div>';
+  return html;
+}
+
+function buildPrintWeek(wk){
+  const mon=toDate(wk.mondayISO);
+  let html='<section class="pr-week">';
+  html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
+      +'<span class="sub">Woche '+fmtDE(mon)+' – '+fmtDE(addDays(mon,4))+'</span></div>';
+  if(wk.houseInfo && wk.houseInfo.trim())
+    html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+esc(wk.houseInfo)+'</div>';
+  DAYS.forEach((_,di)=>{ html+=buildPrintDay(wk,di); });
+  // Legende
+  html+='<div class="pr-legend">';
+  GROUPS.forEach(g=>{ html+='<span><span class="sw" style="background:'+groupColor(g)+'"></span>'+esc(g)+'</span>'; });
+  html+='<span>[Gruppe] = Gasteinsatz</span></div>';
+  html+='<div class="pr-foot">Erstellt am '+fmtDE(new Date())+' · Read-only Ansicht</div>';
+  html+='</section>';
+  return html;
+}
+
+function doPrint(scope){
+  const root=document.getElementById("printRoot");
+  let keys;
+  if(scope==="all") keys=Object.keys(state.weeks).sort();
+  else keys=[curWeekKey];
+  root.innerHTML=keys.map(k=>buildPrintWeek(state.weeks[k])).join("");
+  // kurze Verzögerung, damit Layout steht
+  setTimeout(()=>{ window.print(); }, 60);
+}
+
+document.getElementById("btnPrint").onclick=()=>{
+  document.getElementById("printScope").value="week";
+  document.getElementById("printDialog").showModal();
+};
+document.getElementById("printCancel").onclick=()=>document.getElementById("printDialog").close();
+document.getElementById("printGo").onclick=()=>{
+  const scope=document.getElementById("printScope").value;
+  document.getElementById("printDialog").close();
+  doPrint(scope);
+};
+// Druckcontainer nach dem Drucken wieder leeren (Speicher/Sauberkeit)
+window.addEventListener("afterprint",()=>{document.getElementById("printRoot").innerHTML="";});
+
+// ---------- init ----------
+(function(){
+  const persisted = readPersistedState();
+  if(persisted){ applyState(persisted); return; }
+  gotoWeek(iso(mondayOf(new Date())));
+})();
+</script>
+</body>
+</html>
