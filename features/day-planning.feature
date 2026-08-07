@@ -21,14 +21,14 @@ Funktionalität: Tagesplanung
 
   Szenario: Gruppenraster mit Schichten wird angezeigt
     Dann sehe ich die Gruppen:
-      | Gruppe                 |
-      | Mäuse                  |
-      | Hasen                  |
-      | Mäuschen               |
-      | Häschen                |
-      | Springer               |
-      | Praktikanten/-innen    |
-      | Leitung                |
+      | Gruppe              |
+      | Sonne               |
+      | Mond                |
+      | Sterne              |
+      | Wolken              |
+      | Springer            |
+      | Praktikanten/-innen |
+      | Leitung             |
     Und sehe ich die Schichtspalten:
       | Schicht       |
       | Frühschicht   |
@@ -36,37 +36,37 @@ Funktionalität: Tagesplanung
       | Spätschicht   |
 
   Szenario: Geladenes Personal ist eingeteilt
-    Dann ist "Gül" in Gruppe "Mäuse" und Schicht "Frühschicht" eingeteilt
-    Und ist "Vivien" in Gruppe "Mäuse" und Schicht "Spätschicht" eingeteilt
-    Und ist "Daniel" in Gruppe "Hasen" und Schicht "Frühschicht" eingeteilt
+    Dann ist "Bernd" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
+    Und ist "Anna" in Gruppe "Sonne" und Schicht "Spätschicht" eingeteilt
+    Und ist "Frieda" in Gruppe "Mond" und Schicht "Frühschicht" eingeteilt
     Und der Pool zeigt "Alle eingeteilt."
 
   Szenario: Person per Dialog in andere Schicht verschieben
-    Wenn ich den Chip "Gül" öffne
+    Wenn ich den Chip "Bernd" öffne
     Und ich im Chip-Dialog die Schicht "Mittelschicht" wähle
     Und ich den Chip-Dialog mit "Übernehmen" bestätige
-    Dann ist "Gül" in Gruppe "Mäuse" und Schicht "Mittelschicht" eingeteilt
-    Und ist "Gül" nicht in Gruppe "Mäuse" und Schicht "Frühschicht" eingeteilt
+    Dann ist "Bernd" in Gruppe "Sonne" und Schicht "Mittelschicht" eingeteilt
+    Und ist "Bernd" nicht in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
 
   Szenario: Person als abwesend (krank) markieren
-    Wenn ich den Chip "Barbara" öffne
+    Wenn ich den Chip "Erik" öffne
     Und ich im Chip-Dialog die Abwesenheit "krank" wähle
     Und ich den Chip-Dialog mit "Übernehmen" bestätige
-    Dann ist der Chip "Barbara" als "krank" markiert
+    Dann ist der Chip "Erik" als "krank" markiert
 
   Szenario: Person aus dem Plan nehmen
-    Wenn ich den Chip "Birgit" öffne
+    Wenn ich den Chip "Mirjam" öffne
     Und ich den Chip-Dialog mit "Aus Plan nehmen" bestätige
-    Dann ist "Birgit" nicht eingeteilt
-    Und erscheint "Birgit" im Pool
+    Dann ist "Mirjam" nicht eingeteilt
+    Und erscheint "Mirjam" im Pool
 
   Szenario: Gasteinsatz in anderer Gruppe
-    Wenn ich den Chip "Gül" öffne
-    Und ich im Chip-Dialog die Gruppe "Hasen" wähle
+    Wenn ich den Chip "Bernd" öffne
+    Und ich im Chip-Dialog die Gruppe "Mond" wähle
     Und ich den Chip-Dialog mit "Übernehmen" bestätige
-    Dann ist "Gül" in Gruppe "Hasen" und Schicht "Frühschicht" eingeteilt
-    Und ist der Chip "Gül" als Gasteinsatz markiert
+    Dann ist "Bernd" in Gruppe "Mond" und Schicht "Frühschicht" eingeteilt
+    Und ist der Chip "Bernd" als Gasteinsatz markiert
 
   Szenario: Gruppe-Kommentar erfassen
-    Wenn ich für die Gruppe "Mäuse" den Kommentar "Bringdienst beachten" eintrage
-    Dann enthält der Kommentar der Gruppe "Mäuse" "Bringdienst beachten"
+    Wenn ich für die Gruppe "Sonne" den Kommentar "Bringdienst beachten" eintrage
+    Dann enthält der Kommentar der Gruppe "Sonne" "Bringdienst beachten"

@@ -8,8 +8,8 @@ Funktionalität: Gruppenverwaltung
 
   Szenario: Gruppen-Dialog öffnen und geladene Gruppen sehen
     Wenn ich den Gruppen-Dialog öffne
-    Dann sehe ich im Gruppen-Dialog die Gruppe "Mäuse"
-    Und sehe ich im Gruppen-Dialog die Gruppe "Hasen"
+    Dann sehe ich im Gruppen-Dialog die Gruppe "Sonne"
+    Und sehe ich im Gruppen-Dialog die Gruppe "Mond"
 
   Szenario: Neue Gruppe hinzufügen
     Wenn ich den Gruppen-Dialog öffne
@@ -17,15 +17,15 @@ Funktionalität: Gruppenverwaltung
     Dann sehe ich im Gruppen-Dialog die Gruppe "Füchse"
     Wenn ich den Gruppen-Dialog schließe
     Dann sehe ich die Gruppen:
-      | Gruppe                 |
-      | Mäuse                  |
-      | Hasen                  |
-      | Mäuschen               |
-      | Häschen                |
-      | Springer               |
-      | Praktikanten/-innen    |
-      | Leitung                |
-      | Füchse                 |
+      | Gruppe              |
+      | Sonne               |
+      | Mond                |
+      | Sterne              |
+      | Wolken              |
+      | Springer            |
+      | Praktikanten/-innen |
+      | Leitung             |
+      | Füchse              |
 
   Szenario: Leerer Gruppenname wird abgelehnt
     Wenn ich den Gruppen-Dialog öffne
@@ -34,15 +34,15 @@ Funktionalität: Gruppenverwaltung
 
   Szenario: Doppelter Gruppenname wird abgelehnt
     Wenn ich den Gruppen-Dialog öffne
-    Und ich versuche die Gruppe "Mäuse" erneut hinzuzufügen
+    Und ich versuche die Gruppe "Sonne" erneut hinzuzufügen
     Dann erscheint eine Meldung die "bereits" enthält
-    Und sehe ich im Gruppen-Dialog die Gruppe "Mäuse"
+    Und sehe ich im Gruppen-Dialog die Gruppe "Sonne"
 
   Szenario: Benutzte Gruppe kann nicht gelöscht werden
     Wenn ich den Gruppen-Dialog öffne
-    Und ich versuche die Gruppe "Mäuse" zu löschen
+    Und ich versuche die Gruppe "Sonne" zu löschen
     Dann erscheint eine Meldung die "kann nicht gelöscht werden" enthält
-    Und sehe ich im Gruppen-Dialog die Gruppe "Mäuse"
+    Und sehe ich im Gruppen-Dialog die Gruppe "Sonne"
 
   Szenario: Unbenutzte Gruppe löschen
     Wenn ich den Gruppen-Dialog öffne
@@ -51,19 +51,19 @@ Funktionalität: Gruppenverwaltung
     Dann sehe ich im Gruppen-Dialog nicht die Gruppe "Füchse"
     Wenn ich den Gruppen-Dialog schließe
     Dann sehe ich die Gruppen:
-      | Gruppe                 |
-      | Mäuse                  |
-      | Hasen                  |
-      | Mäuschen               |
-      | Häschen                |
-      | Springer               |
-      | Praktikanten/-innen    |
-      | Leitung                |
+      | Gruppe              |
+      | Sonne               |
+      | Mond                |
+      | Sterne              |
+      | Wolken              |
+      | Springer            |
+      | Praktikanten/-innen |
+      | Leitung             |
 
   Szenario: Geladene Gruppen behalten ihre Farben
     Wenn ich den Gruppen-Dialog öffne
-    Dann hat die Gruppe "Mäuse" die Farbe "#e8623c"
-    Und hat die Gruppe "Hasen" die Farbe "#3f8f5b"
+    Dann hat die Gruppe "Sonne" die Farbe "#e8623c"
+    Und hat die Gruppe "Mond" die Farbe "#3f8f5b"
 
   Szenario: Gruppe mit gewählter Farbe anlegen
     Wenn ich den Gruppen-Dialog öffne
@@ -74,10 +74,10 @@ Funktionalität: Gruppenverwaltung
 
   Szenario: Gruppenfarbe nachträglich ändern
     Wenn ich den Gruppen-Dialog öffne
-    Und ich die Farbe der Gruppe "Mäuse" auf "#0d8f9c" setze
-    Dann hat die Gruppe "Mäuse" die Farbe "#0d8f9c"
+    Und ich die Farbe der Gruppe "Sonne" auf "#0d8f9c" setze
+    Dann hat die Gruppe "Sonne" die Farbe "#0d8f9c"
     Wenn ich den Gruppen-Dialog schließe
-    Dann hat die Gruppenzeile "Mäuse" die Hintergrundfarbe "#0d8f9c"
+    Dann hat die Gruppenzeile "Sonne" die Hintergrundfarbe "#0d8f9c"
 
   Szenario: Default-Farbe bevorzugt unbenutzte Farbe
     Wenn ich den Gruppen-Dialog öffne

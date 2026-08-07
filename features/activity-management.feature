@@ -51,28 +51,28 @@ Funktionalität: Aktivitäten
     Dann erscheint die Aktivität "Elterncafé" nicht im Aktivitäten-Pool
 
   Szenario: Geladene Aktivität ist im Plan sichtbar
-    Dann ist die Aktivität "Turnen" in Gruppe "Mäuse" und Schicht "Mittelschicht" eingeplant
+    Dann ist die Aktivität "Turnen" in Gruppe "Sonne" und Schicht "Mittelschicht" eingeplant
 
   Szenario: Aktivität per Ziehen in eine Zelle einplanen
-    Wenn ich die Aktivität "Fußball spielen" in Gruppe "Hasen" und Schicht "Frühschicht" ziehe
-    Dann ist die Aktivität "Fußball spielen" in Gruppe "Hasen" und Schicht "Frühschicht" eingeplant
+    Wenn ich die Aktivität "Fußball spielen" in Gruppe "Mond" und Schicht "Frühschicht" ziehe
+    Dann ist die Aktivität "Fußball spielen" in Gruppe "Mond" und Schicht "Frühschicht" eingeplant
 
   Szenario: Aktivität kann mehrfach eingeplant werden
-    Wenn ich die Aktivität "Fußball spielen" in Gruppe "Hasen" und Schicht "Frühschicht" ziehe
-    Und ich die Aktivität "Fußball spielen" in Gruppe "Häschen" und Schicht "Spätschicht" ziehe
-    Dann ist die Aktivität "Fußball spielen" in Gruppe "Hasen" und Schicht "Frühschicht" eingeplant
-    Und ist die Aktivität "Fußball spielen" in Gruppe "Häschen" und Schicht "Spätschicht" eingeplant
+    Wenn ich die Aktivität "Fußball spielen" in Gruppe "Mond" und Schicht "Frühschicht" ziehe
+    Und ich die Aktivität "Fußball spielen" in Gruppe "Wolken" und Schicht "Spätschicht" ziehe
+    Dann ist die Aktivität "Fußball spielen" in Gruppe "Mond" und Schicht "Frühschicht" eingeplant
+    Und ist die Aktivität "Fußball spielen" in Gruppe "Wolken" und Schicht "Spätschicht" eingeplant
 
   Szenario: Geplante Aktivität per Dialog verschieben
-    Wenn ich die geplante Aktivität "Turnen" in Gruppe "Mäuse" und Schicht "Mittelschicht" öffne
+    Wenn ich die geplante Aktivität "Turnen" in Gruppe "Sonne" und Schicht "Mittelschicht" öffne
     Und ich im Aktivitäts-Dialog die Schicht "Spätschicht" wähle
-    Und ich im Aktivitäts-Dialog die Gruppe "Hasen" wähle
+    Und ich im Aktivitäts-Dialog die Gruppe "Mond" wähle
     Und ich den Aktivitäts-Dialog mit "Übernehmen" bestätige
-    Dann ist die Aktivität "Turnen" in Gruppe "Hasen" und Schicht "Spätschicht" eingeplant
-    Und ist die Aktivität "Turnen" nicht in Gruppe "Mäuse" und Schicht "Mittelschicht" eingeplant
+    Dann ist die Aktivität "Turnen" in Gruppe "Mond" und Schicht "Spätschicht" eingeplant
+    Und ist die Aktivität "Turnen" nicht in Gruppe "Sonne" und Schicht "Mittelschicht" eingeplant
 
   Szenario: Geplante Aktivität aus dem Plan nehmen
-    Wenn ich die geplante Aktivität "Turnen" in Gruppe "Mäuse" und Schicht "Mittelschicht" öffne
+    Wenn ich die geplante Aktivität "Turnen" in Gruppe "Sonne" und Schicht "Mittelschicht" öffne
     Und ich den Aktivitäts-Dialog mit "Aus Plan nehmen" bestätige
     Dann ist die Aktivität "Turnen" nicht eingeplant
     Und erscheint die Aktivität "Turnen" im Aktivitäten-Pool
@@ -81,8 +81,8 @@ Funktionalität: Aktivitäten
     Wenn ich den Aktivitäten-Dialog öffne
     Und ich eine neue Aktivität "Tanzen" mit Icon "💃" hinzufüge
     Und ich den Aktivitäten-Dialog schließe
-    Und ich die Aktivität "Tanzen" in Gruppe "Hasen" und Schicht "Frühschicht" ziehe
+    Und ich die Aktivität "Tanzen" in Gruppe "Mond" und Schicht "Frühschicht" ziehe
     Und ich den Plan speichere
     Und ich die Anwendung schließe und wieder öffne
     Dann erscheint die Aktivität "Tanzen" im Aktivitäten-Pool
-    Und ist die Aktivität "Tanzen" in Gruppe "Hasen" und Schicht "Frühschicht" eingeplant
+    Und ist die Aktivität "Tanzen" in Gruppe "Mond" und Schicht "Frühschicht" eingeplant

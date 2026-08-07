@@ -24,11 +24,11 @@ Funktionalität: Wochennavigation
 
   Szenario: Wochentage Montag bis Freitag sind wählbar
     Dann sehe ich die Tagesreiter:
-      | Tag         |
-      | Montag      |
-      | Dienstag    |
-      | Mittwoch    |
-      | Donnerstag  |
-      | Freitag     |
+      | Tag        |
+      | Montag     |
+      | Dienstag   |
+      | Mittwoch   |
+      | Donnerstag |
+      | Freitag    |
     Wenn ich den Tag "Mittwoch" wähle
     Dann der Tag "Mittwoch" ist aktiv

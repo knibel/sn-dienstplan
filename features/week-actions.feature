@@ -6,19 +6,19 @@ Funktionalität: Wochenaktionen
     Angenommen die Dienstplan-App ist geöffnet
 
   Szenario: Woche zurücksetzen stellt Standardzuteilung wieder her
-    Wenn ich den Chip "Gül" öffne
+    Wenn ich den Chip "Bernd" öffne
     Und ich den Chip-Dialog mit "Aus Plan nehmen" bestätige
-    Dann ist "Gül" nicht eingeteilt
+    Dann ist "Bernd" nicht eingeteilt
     Wenn ich die Woche zurücksetze
-    Dann ist "Gül" in Gruppe "Mäuse" und Schicht "Frühschicht" eingeteilt
+    Dann ist "Bernd" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
 
   Szenario: Vorwoche kopieren übernimmt Zuteilungen
-    Wenn ich den Chip "Gül" öffne
+    Wenn ich den Chip "Bernd" öffne
     Und ich im Chip-Dialog die Schicht "Spätschicht" wähle
     Und ich den Chip-Dialog mit "Übernehmen" bestätige
     Und ich zur nächsten Woche wechsle
     Und ich die Vorwoche kopiere
-    Dann ist "Gül" in Gruppe "Mäuse" und Schicht "Spätschicht" eingeteilt
+    Dann ist "Bernd" in Gruppe "Sonne" und Schicht "Spätschicht" eingeteilt
 
   Szenario: Vorwoche kopieren ohne vorhandene Vorwoche meldet Fehler
     Wenn ich zur vorherigen Woche wechsle

@@ -49,7 +49,7 @@ When("ich im Chip-Dialog die Schicht {string} wähle", async function (shift) {
 });
 
 When("ich im Chip-Dialog die Gruppe {string} wähle", async function (group) {
-  // options may be "Hasen" or "Hasen (Stamm)"
+  // options may be "Mond" or "Mond (Stamm)"
   const options = await this.page.locator("#dlgGroup option").allTextContents();
   const match = options.find((o) => o === group || o.startsWith(group + " "));
   assert.ok(match, `Gruppe "${group}" nicht im Dialog gefunden`);

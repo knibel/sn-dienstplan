@@ -10,23 +10,23 @@
           "info": "",
           "comments": {},
           "activities": [
-            { "id": "1", "name": "Turnen", "group": "Mäuse", "shift": "mittel" }
+            { "id": "1", "name": "Turnen", "group": "Sonne", "shift": "mittel" }
           ],
           "assign": {
-            "Vivien": { "shift": "spaet", "group": "Mäuse", "away": "" },
-            "Gül": { "shift": "frueh", "group": "Mäuse", "away": "" },
-            "Chantal": { "shift": "frueh", "group": "Mäuse", "away": "" },
-            "Daniela": { "shift": "spaet", "group": "Hasen", "away": "" },
-            "Barbara": { "shift": "mittel", "group": "Hasen", "away": "" },
-            "Daniel": { "shift": "frueh", "group": "Hasen", "away": "" },
-            "Sabrina": { "shift": "spaet", "group": "Mäuschen", "away": "" },
-            "Melli": { "shift": "mittel", "group": "Mäuschen", "away": "" },
-            "Lena": { "shift": "frueh", "group": "Mäuschen", "away": "" },
-            "Thomas": { "shift": "spaet", "group": "Häschen", "away": "" },
-            "Maria": { "shift": "mittel", "group": "Häschen", "away": "" },
-            "Viktoria": { "shift": "frueh", "group": "Häschen", "away": "" },
-            "Birgit": { "shift": "frueh", "group": "Springer", "away": "" },
-            "Beate": { "shift": "frueh", "group": "Leitung", "away": "" }
+            "Anna": { "shift": "spaet", "group": "Sonne", "away": "" },
+            "Bernd": { "shift": "frueh", "group": "Sonne", "away": "" },
+            "Clara": { "shift": "frueh", "group": "Sonne", "away": "" },
+            "Doris": { "shift": "spaet", "group": "Mond", "away": "" },
+            "Erik": { "shift": "mittel", "group": "Mond", "away": "" },
+            "Frieda": { "shift": "frueh", "group": "Mond", "away": "" },
+            "Greta": { "shift": "spaet", "group": "Sterne", "away": "" },
+            "Hanno": { "shift": "mittel", "group": "Sterne", "away": "" },
+            "Ines": { "shift": "frueh", "group": "Sterne", "away": "" },
+            "Jonas": { "shift": "spaet", "group": "Wolken", "away": "" },
+            "Katrin": { "shift": "mittel", "group": "Wolken", "away": "" },
+            "Lars": { "shift": "frueh", "group": "Wolken", "away": "" },
+            "Mirjam": { "shift": "frueh", "group": "Springer", "away": "" },
+            "Nadine": { "shift": "frueh", "group": "Leitung", "away": "" }
           }
         },
         { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
@@ -37,10 +37,10 @@
     }
   },
   "groups": [
-    { "name": "Mäuse", "color": "#e8623c" },
-    { "name": "Hasen", "color": "#3f8f5b" },
-    { "name": "Mäuschen", "color": "#c9932b" },
-    { "name": "Häschen", "color": "#3d6fb3" },
+    { "name": "Sonne", "color": "#e8623c" },
+    { "name": "Mond", "color": "#3f8f5b" },
+    { "name": "Sterne", "color": "#c9932b" },
+    { "name": "Wolken", "color": "#3d6fb3" },
     { "name": "Springer", "color": "#7a56b0" },
     { "name": "Praktikanten/-innen", "color": "#0d8f9c" },
     { "name": "Leitung", "color": "#5a6472" }
@@ -51,19 +51,19 @@
     { "name": "Elterncafé", "icon": "☕" }
   ],
   "staff": [
-    { "name": "Vivien", "stamm": "Mäuse", "active": true },
-    { "name": "Gül", "stamm": "Mäuse", "active": true },
-    { "name": "Chantal", "stamm": "Mäuse", "active": true },
-    { "name": "Daniela", "stamm": "Hasen", "active": true },
-    { "name": "Barbara", "stamm": "Hasen", "active": true },
-    { "name": "Daniel", "stamm": "Hasen", "active": true },
-    { "name": "Sabrina", "stamm": "Mäuschen", "active": true },
-    { "name": "Melli", "stamm": "Mäuschen", "active": true },
-    { "name": "Lena", "stamm": "Mäuschen", "active": true },
-    { "name": "Thomas", "stamm": "Häschen", "active": true },
-    { "name": "Maria", "stamm": "Häschen", "active": true },
-    { "name": "Viktoria", "stamm": "Häschen", "active": true },
-    { "name": "Birgit", "stamm": "Springer", "active": true },
-    { "name": "Beate", "stamm": "Leitung", "active": true }
+    { "name": "Anna", "stamm": "Sonne", "active": true },
+    { "name": "Bernd", "stamm": "Sonne", "active": true },
+    { "name": "Clara", "stamm": "Sonne", "active": true },
+    { "name": "Doris", "stamm": "Mond", "active": true },
+    { "name": "Erik", "stamm": "Mond", "active": true },
+    { "name": "Frieda", "stamm": "Mond", "active": true },
+    { "name": "Greta", "stamm": "Sterne", "active": true },
+    { "name": "Hanno", "stamm": "Sterne", "active": true },
+    { "name": "Ines", "stamm": "Sterne", "active": true },
+    { "name": "Jonas", "stamm": "Wolken", "active": true },
+    { "name": "Katrin", "stamm": "Wolken", "active": true },
+    { "name": "Lars", "stamm": "Wolken", "active": true },
+    { "name": "Mirjam", "stamm": "Springer", "active": true },
+    { "name": "Nadine", "stamm": "Leitung", "active": true }
   ]
 }

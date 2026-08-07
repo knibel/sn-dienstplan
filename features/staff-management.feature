@@ -8,8 +8,8 @@ Funktionalität: Personalverwaltung
 
   Szenario: Personal-Dialog öffnen und geladenes Personal sehen
     Wenn ich den Personal-Dialog öffne
-    Dann sehe ich im Personal-Dialog die Person "Vivien"
-    Und sehe ich im Personal-Dialog die Person "Beate"
+    Dann sehe ich im Personal-Dialog die Person "Anna"
+    Und sehe ich im Personal-Dialog die Person "Nadine"
 
   Szenario: Neue Person hinzufügen
     Wenn ich den Personal-Dialog öffne
@@ -21,14 +21,14 @@ Funktionalität: Personalverwaltung
 
   Szenario: Person deaktivieren entfernt sie aus neuen Standardzuteilungen
     Wenn ich den Personal-Dialog öffne
-    Und ich die Person "Birgit" deaktiviere
+    Und ich die Person "Mirjam" deaktiviere
     Und ich den Personal-Dialog schließe
     Und ich zur nächsten Woche wechsle
-    Dann ist "Birgit" nicht eingeteilt
-    Und erscheint "Birgit" nicht im Pool
+    Dann ist "Mirjam" nicht eingeteilt
+    Und erscheint "Mirjam" nicht im Pool
 
   Szenario: Eingeteilte Person kann nicht gelöscht werden
     Wenn ich den Personal-Dialog öffne
-    Und ich versuche die Person "Vivien" zu löschen
+    Und ich versuche die Person "Anna" zu löschen
     Dann erscheint eine Meldung die "kann nicht gelöscht werden" enthält
-    Und sehe ich im Personal-Dialog die Person "Vivien"
+    Und sehe ich im Personal-Dialog die Person "Anna"

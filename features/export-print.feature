@@ -14,5 +14,5 @@ Funktionalität: Export und Druck
     Dann ist der Druckdialog geschlossen
 
   Szenario: Druckansicht enthält Personal und geplante Aktivitäten
-    Dann enthält die Druckansicht der aktuellen Woche "Gül"
+    Dann enthält die Druckansicht der aktuellen Woche "Bernd"
     Und enthält die Druckansicht der aktuellen Woche "🤸 Turnen"
