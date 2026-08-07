@@ -9,6 +9,9 @@
           "mode": "Normalbetrieb",
           "info": "",
           "comments": {},
+          "activities": [
+            { "id": "1", "name": "Turnen", "group": "Mäuse", "shift": "mittel" }
+          ],
           "assign": {
             "Vivien": { "shift": "spaet", "group": "Mäuse", "away": "" },
             "Gül": { "shift": "frueh", "group": "Mäuse", "away": "" },
@@ -26,9 +29,9 @@
             "Beate": { "shift": "frueh", "group": "Leitung", "away": "" }
           }
         },
-        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} },
-        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} },
-        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
         { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} }
       ]
     }
@@ -41,6 +44,11 @@
     { "name": "Springer", "color": "#7a56b0" },
     { "name": "Praktikanten/-innen", "color": "#0d8f9c" },
     { "name": "Leitung", "color": "#5a6472" }
+  ],
+  "activities": [
+    { "name": "Fußball spielen", "icon": "⚽" },
+    { "name": "Turnen", "icon": "🤸" },
+    { "name": "Elterncafé", "icon": "☕" }
   ],
   "staff": [
     { "name": "Vivien", "stamm": "Mäuse", "active": true },

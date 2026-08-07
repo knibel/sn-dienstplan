@@ -46,8 +46,10 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 /* ---- pool ---- */
 .pool{width:210px;flex:0 0 210px;background:var(--panel);border-right:1px solid var(--line);padding:10px;position:sticky;top:92px;max-height:calc(100vh - 92px);overflow-y:auto}
 .pool h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
+.pool h3.sec{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 .pool .poolnote{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4}
 #pool{min-height:60px}
+#activityPool{display:flex;flex-wrap:wrap;gap:4px}
 .pool.dragover{outline:2px dashed var(--muted);outline-offset:-4px}
 
 /* ---- grid / chips ---- */
@@ -68,6 +70,8 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .chip.away-krank{opacity:.55;text-decoration:line-through}
 .chip.away-urlaub{opacity:.55}
 .chip small{font-size:9px;opacity:.85;background:rgba(0,0,0,.22);padding:1px 4px;border-radius:6px}
+.chip.activity{background:#fff;color:var(--ink);border:1.5px solid var(--line-strong);font-weight:600}
+.chip .ico{font-size:14px;line-height:1}
 .commentcol{padding:6px;border-bottom:1px solid var(--line);background:#fafcfe}
 .commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:vertical;min-height:44px;background:#fff}
 
@@ -75,7 +79,14 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 dialog{border:none;border-radius:10px;padding:0;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:340px}
 #staffDialog{max-width:min(560px,95vw);width:560px}
 #groupsDialog{max-width:min(480px,95vw);width:480px}
+#activitiesDialog{max-width:min(520px,95vw);width:520px}
 .color-swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.icon-swatches{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.icon-swatch{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:15px;line-height:1;padding:0;flex:0 0 26px}
+.icon-swatch.selected{outline:2px solid var(--ink);outline-offset:1px;border-color:#fff}
+.actrow{flex-wrap:wrap}
+.actrow .icon-swatches{flex-basis:100%;margin-top:4px}
+.actrow .ico{font-size:15px;flex:0 0 auto}
 .color-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;flex:0 0 22px;box-sizing:border-box}
 .color-swatch.selected{outline:2px solid var(--ink);outline-offset:1px;border-color:#fff}
 .staffrow .color-swatches{margin-left:auto}
@@ -140,6 +151,8 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 
   .pr-person{display:inline;white-space:nowrap}
   .pr-person + .pr-person::before{content:", "}
+  .pr-act{display:inline;white-space:nowrap;font-weight:700}
+  .pr-act + .pr-act::before,.pr-act + .pr-person::before,.pr-person + .pr-act::before{content:", "}
   .pr-person.away{color:#999}
   .pr-person.away.krank{text-decoration:line-through}
   .pr-person .tag{font-size:7pt;color:#666}
@@ -182,7 +195,8 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <span class="sep"></span>
   <button id="btnStaff">👥 Personal</button>
   <button id="btnGroups">🧩 Gruppen</button>
-  <span class="hint">Mitarbeiter per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
+  <button id="btnActivities">🎈 Aktivitäten</button>
+  <span class="hint">Mitarbeiter &amp; Aktivitäten per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
 </div>
 
 <div class="layout">
@@ -190,6 +204,9 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     <h3>Nicht eingeteilt</h3>
     <div class="poolnote">Ziehe Personen in eine Zelle. Aus einer Zelle zurück hierher zieht sie wieder heraus.</div>
     <div id="pool"></div>
+    <h3 class="sec">Aktivitäten</h3>
+    <div class="poolnote">Ziehe eine Aktivität in eine Zelle – sie kann mehrfach eingeplant werden.</div>
+    <div id="activityPool"></div>
   </aside>
   <main class="main">
     <div class="daytabs" id="dayTabs"></div>
@@ -262,6 +279,38 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <div class="btns"><button id="groupsClose" class="primary">Fertig</button></div>
 </div></dialog>
 
+<dialog id="activitiesDialog"><div class="dlg">
+  <h3>Aktivitäten verwalten</h3>
+  <div id="activitiesList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
+  <div style="border-top:1px solid var(--line);padding-top:10px">
+    <strong style="font-size:12px">Neue Aktivität</strong>
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
+      <input id="newActivityName" placeholder="Name, z.B. Fußball spielen" style="flex:1;min-width:140px">
+      <button id="newActivityAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
+    </div>
+    <label style="margin-top:8px">Icon</label>
+    <div id="newActivityIcons" class="icon-swatches" style="margin-top:4px"></div>
+  </div>
+  <div class="btns"><button id="activitiesClose" class="primary">Fertig</button></div>
+</div></dialog>
+
+<dialog id="activityDialog"><div class="dlg">
+  <h3 id="actDlgName"></h3>
+  <label>Schicht</label>
+  <select id="actDlgShift">
+    <option value="frueh">Frühschicht</option>
+    <option value="mittel">Mittelschicht</option>
+    <option value="spaet">Spätschicht</option>
+  </select>
+  <label>Gruppe</label>
+  <select id="actDlgGroup"></select>
+  <div class="btns">
+    <button id="actDlgRemove" class="danger">Aus Plan nehmen</button>
+    <button id="actDlgCancel">Abbrechen</button>
+    <button id="actDlgOk" class="primary">Übernehmen</button>
+  </div>
+</div></dialog>
+
 <div class="saved-flash" id="flash"></div>
 
 <!-- Druck-/PDF-Auswahl -->
@@ -292,6 +341,8 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 const Constants = {
   /** Feste Palette für Gruppenfarben. */
   GROUP_COLORS: ["#e8623c","#3f8f5b","#c9932b","#3d6fb3","#7a56b0","#0d8f9c","#5a6472"],
+  /** Auswahl an Icons für Aktivitäten. */
+  ACTIVITY_ICONS: ["⚽","🤸","💃","☕","🎨","🎵","📚","🍪","🌳","🚌","🎂","🧩","🎭","🏊","🧘","🔬","🎉","🚲","🧸","✂️","🥁","🏕️","🐛","🩺"],
   SHIFTS: [["frueh","Frühschicht"],["mittel","Mittelschicht"],["spaet","Spätschicht"]],
   SHIFT_KEYS: ["frueh","mittel","spaet"],
   AWAY_LABEL: {krank:"krank",urlaub:"Urlaub",sonstiges:"Sonst."},
@@ -396,13 +447,53 @@ const Groups = {
   },
 };
 
+// ---------- Activities (rein) ----------
+// activities: [{name, icon}]  (icon = Emoji, z.B. "⚽")
+const Activities = {
+  all(activities){ return activities||[]; },
+  names(activities){ return Activities.all(activities).map(a=>a.name); },
+  find(activities,name){ return Activities.all(activities).find(a=>a.name===name); },
+  has(activities,name){ return !!Activities.find(activities,name); },
+  iconOf(activities,name){
+    const a=Activities.find(activities,name);
+    return (a && a.icon) || Constants.ACTIVITY_ICONS[0];
+  },
+  usedIcons(activities){
+    return new Set(Activities.all(activities).map(a=>a.icon).filter(Boolean));
+  },
+  /** Erstes Icon der Auswahl, das noch nicht vergeben ist; sonst erstes Icon. */
+  defaultIcon(activities){
+    const used=Activities.usedIcons(activities);
+    return Constants.ACTIVITY_ICONS.find(i=>!used.has(i)) || Constants.ACTIVITY_ICONS[0];
+  },
+  isUsed(weeks,name){
+    return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
+      (d.activities||[]).some(p=>p.name===name)
+    ));
+  },
+  add(activities,name,icon){
+    activities.push({name, icon:icon || Activities.defaultIcon(activities)});
+    return activities;
+  },
+  remove(activities,name){
+    const i=Activities.all(activities).findIndex(a=>a.name===name);
+    if(i>=0) activities.splice(i,1);
+    return activities;
+  },
+  setIcon(activities,name,icon){
+    const a=Activities.find(activities,name);
+    if(a) a.icon=icon;
+    return activities;
+  },
+};
+
 // ---------- Week (rein) ----------
 const Week = {
   blank(mondayISO){
     return {
       mondayISO,
       houseInfo:"",
-      days:Constants.DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:{},comments:{}})),
+      days:Constants.DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:{},comments:{},activities:[]})),
     };
   },
   ensure(weeks,mondayISO){
@@ -432,6 +523,36 @@ const Week = {
   unassign(day,name){
     delete day.assign[name];
   },
+  /** Eingeplante Aktivitäten eines Tages: [{id,name,group,shift}] */
+  activityList(day){
+    if(!Array.isArray(day.activities)) day.activities=[];
+    return day.activities;
+  },
+  nextActivityId(day){
+    const max=Week.activityList(day).reduce((m,p)=>Math.max(m, Number(p.id)||0), 0);
+    return String(max+1);
+  },
+  addActivity(day,{name,group,shift}){
+    const placement={id:Week.nextActivityId(day),name,group,shift};
+    Week.activityList(day).push(placement);
+    return placement;
+  },
+  findActivity(day,id){
+    return Week.activityList(day).find(p=>p.id===id);
+  },
+  updateActivity(day,id,patch){
+    const p=Week.findActivity(day,id);
+    if(!p) return null;
+    if(patch.shift!==undefined) p.shift=patch.shift;
+    if(patch.group!==undefined) p.group=patch.group;
+    return p;
+  },
+  removeActivity(day,id){
+    const list=Week.activityList(day);
+    const i=list.findIndex(p=>p.id===id);
+    if(i>=0) list.splice(i,1);
+  },
+
   updateAssignment(day,name,patch){
     const a=day.assign[name];
     if(!a) return null;
@@ -448,6 +569,7 @@ const Week = {
         info:"",
         assign:Week.defaultAssign(staff),
         comments:{},
+        activities:[],
       })),
     };
   },
@@ -479,13 +601,25 @@ const ViewModel = {
     };
   },
 
-  forDay(day,staff,groups){
+  activityEntry(placement,activities){
+    return {
+      id:placement.id,
+      name:placement.name,
+      icon:Activities.iconOf(activities,placement.name),
+      group:placement.group,
+      shift:placement.shift,
+    };
+  },
+
+  forDay(day,staff,groups,activities){
     const assign=day.assign||{};
     const assigned=new Set(Object.keys(assign));
     const pool=Staff.active(staff).filter(s=>!assigned.has(s.name));
     const cells={};
+    const activityCells={};
     Groups.names(groups).forEach(g=>{
       cells[g]={frueh:[],mittel:[],spaet:[]};
+      activityCells[g]={frueh:[],mittel:[],spaet:[]};
     });
     Object.entries(assign).forEach(([name,a])=>{
       const entry=ViewModel.personEntry(name,a,staff,groups);
@@ -494,12 +628,19 @@ const ViewModel = {
       const bucket=row[a.shift]||row.frueh;
       bucket.push(entry);
     });
+    (day.activities||[]).forEach(p=>{
+      const row=activityCells[p.group];
+      if(!row) return;
+      const bucket=row[p.shift]||row.frueh;
+      bucket.push(ViewModel.activityEntry(p,activities));
+    });
     return {
       mode:day.mode,
       info:day.info||"",
       comments:day.comments||{},
       pool,
       cells,
+      activityCells,
     };
   },
 };
@@ -509,13 +650,15 @@ const Store = (() => {
   // groups: [{name, color}]
   // staff: [{name,stamm,active}]
   // weekKey -> {mondayISO, days:[{mode,info,assign,comments}], houseInfo}
-  let state = { weekStartISO:null, weeks:{}, groups:[], staff:[] };
+  let state = { weekStartISO:null, weeks:{}, groups:[], staff:[], activities:[] };
   let curWeekKey = null;
   let curDay = 0;
   // Ephemeral UI (kein Re-Render)
-  let dragName = null;
+  let dragToken = null;
   let dlgName = null;
   let dlgDay = null;
+  let actDlgId = null;
+  let actDlgDay = null;
 
   const listeners = new Set();
   let txDepth = 0;
@@ -585,17 +728,37 @@ const Store = (() => {
       return state;
     },
 
-    setDragName(n){ dragName = n; },
-    getDragName(){ return dragName; },
+    setDragToken(t){ dragToken = t; },
+    getDragToken(){ return dragToken; },
     setChipDialog(name, day){ dlgName = name; dlgDay = day; },
     chipDialog(){ return { name:dlgName, day:dlgDay }; },
+    setActivityDialog(id, day){ actDlgId = id; actDlgDay = day; },
+    activityDialog(){ return { id:actDlgId, day:actDlgDay }; },
   };
 })();
+
+// ---------- Drag (rein: Transfer-Token) ----------
+// "staff:<Name>" = Person · "activity:<Name>" = neue Aktivität · "placement:<Id>" = bereits geplante Aktivität
+const Drag = {
+  staff(name){ return "staff:"+name; },
+  activity(name){ return "activity:"+name; },
+  placement(id){ return "placement:"+id; },
+  parse(token){
+    const t=String(token||"");
+    const i=t.indexOf(":");
+    if(i<0) return {kind:"staff", value:t};
+    return {kind:t.slice(0,i), value:t.slice(i+1)};
+  },
+};
 
 // ---------- View ----------
 const View = {
   groupColor(name){
     return Groups.colorOf(Store.get().groups, name);
+  },
+
+  activityIcon(name){
+    return Activities.iconOf(Store.get().activities, name);
   },
 
   flash(msg){
@@ -607,7 +770,7 @@ const View = {
 
   dayViewModel(day){
     const s=Store.get();
-    return ViewModel.forDay(day, s.staff, s.groups);
+    return ViewModel.forDay(day, s.staff, s.groups, s.activities);
   },
 
   render(){
@@ -637,6 +800,7 @@ const View = {
     const vm=View.dayViewModel(day);
     View.renderGrid(day,vm,s.groups);
     View.renderPool(day,vm);
+    View.renderActivityPool(s.activities);
     View.renderLegend(s.groups);
   },
 
@@ -660,6 +824,9 @@ const View = {
         (vm.cells[g][sk]||[]).forEach(entry=>{
           cell.appendChild(View.makeChip(entry));
         });
+        (vm.activityCells[g][sk]||[]).forEach(entry=>{
+          cell.appendChild(View.makeActivityChip(entry));
+        });
         grid.appendChild(cell);
       });
       const cc=document.createElement("div"); cc.className="commentcol";
@@ -681,8 +848,28 @@ const View = {
     if(entry.isGuest) inner+=` <small>${entry.stamm}</small>`;
     if(entry.away) inner=`<span class="away"></span>`+inner+` <small>${entry.awayLabel}</small>`;
     c.innerHTML=inner;
-    c.ondragstart=e=>{e.dataTransfer.setData("text/plain",entry.name);Store.setDragName(entry.name);};
+    c.ondragstart=e=>{const t=Drag.staff(entry.name);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
     c.onclick=()=>ChipDialog.open(entry.name);
+    return c;
+  },
+
+  /** Chip einer Aktivität – im Raster (mit Platzierungs-Id) oder im Pool (ohne). */
+  makeActivityChip(entry){
+    const c=document.createElement("div");
+    c.className="chip activity";
+    c.draggable=true;
+    c.dataset.activity=entry.name;
+    const ico=document.createElement("span");
+    ico.className="ico"; ico.textContent=entry.icon;
+    c.appendChild(ico);
+    c.appendChild(document.createTextNode(entry.name));
+    if(entry.id){
+      c.dataset.placement=entry.id;
+      c.ondragstart=e=>{const t=Drag.placement(entry.id);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
+      c.onclick=()=>ActivityDialog.open(entry.id);
+    }else{
+      c.ondragstart=e=>{const t=Drag.activity(entry.name);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
+    }
     return c;
   },
 
@@ -693,11 +880,20 @@ const View = {
       c.className="chip"; c.style.background=View.groupColor(s.stamm);
       c.draggable=true; c.dataset.name=s.name;
       c.innerHTML=s.name+` <small>${s.stamm}</small>`;
-      c.ondragstart=e=>{e.dataTransfer.setData("text/plain",s.name);Store.setDragName(s.name);};
+      c.ondragstart=e=>{const t=Drag.staff(s.name);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
       pool.appendChild(c);
     });
     if(!pool.children.length) pool.innerHTML='<div class="poolnote">Alle eingeteilt.</div>';
     View.wirePoolDrop();
+  },
+
+  renderActivityPool(activities){
+    const box=document.getElementById("activityPool"); box.innerHTML="";
+    Activities.all(activities).forEach(a=>{
+      box.appendChild(View.makeActivityChip({name:a.name, icon:Activities.iconOf(activities,a.name)}));
+    });
+    if(!box.children.length)
+      box.innerHTML='<div class="poolnote">Noch keine Aktivitäten angelegt.</div>';
   },
 
   wireDrop(cell){
@@ -705,16 +901,15 @@ const View = {
     cell.ondragleave=()=>cell.classList.remove("dragover");
     cell.ondrop=e=>{
       e.preventDefault();cell.classList.remove("dragover");
-      const name=e.dataTransfer.getData("text/plain")||Store.getDragName();
-      if(!name)return;
+      const token=e.dataTransfer.getData("text/plain")||Store.getDragToken();
+      if(!token)return;
+      const {kind,value}=Drag.parse(token);
+      const target={shift:cell.dataset.shift, group:cell.dataset.group};
       Store.mutate(s=>{
-        Week.assign(
-          Store.currentDay(),
-          name,
-          {shift:cell.dataset.shift,group:cell.dataset.group},
-          s.staff,
-          s.groups
-        );
+        const day=Store.currentDay();
+        if(kind==="activity") Week.addActivity(day, {name:value, ...target});
+        else if(kind==="placement") Week.updateActivity(day, value, target);
+        else Week.assign(day, value, target, s.staff, s.groups);
       });
     };
   },
@@ -725,9 +920,15 @@ const View = {
     aside.ondragleave=e=>{if(!aside.contains(e.relatedTarget))aside.classList.remove("dragover");};
     aside.ondrop=e=>{
       e.preventDefault();aside.classList.remove("dragover");
-      const name=e.dataTransfer.getData("text/plain")||Store.getDragName();
-      if(!name) return;
-      Store.mutate(()=>{ Week.unassign(Store.currentDay(), name); });
+      const token=e.dataTransfer.getData("text/plain")||Store.getDragToken();
+      if(!token) return;
+      const {kind,value}=Drag.parse(token);
+      if(kind==="activity") return; // Aktivität aus dem Pool zurück in den Pool: nichts zu tun
+      Store.mutate(()=>{
+        const day=Store.currentDay();
+        if(kind==="placement") Week.removeActivity(day, value);
+        else Week.unassign(day, value);
+      });
     };
   },
 
@@ -783,6 +984,47 @@ const ChipDialog = {
       const { name, day } = Store.chipDialog();
       Store.mutate(()=>{ Week.unassign(day, name); });
       document.getElementById("chipDialog").close();
+    };
+  },
+};
+
+// ---------- ActivityDialog (geplante Aktivität im Raster) ----------
+const ActivityDialog = {
+  open(id){
+    const day=Store.currentDay();
+    const p=Week.findActivity(day,id);
+    if(!p) return;
+    Store.setActivityDialog(id, day);
+    const s=Store.get();
+    document.getElementById("actDlgName").textContent=
+      Activities.iconOf(s.activities,p.name)+"  "+p.name;
+    document.getElementById("actDlgShift").value=p.shift;
+    const gsel=document.getElementById("actDlgGroup"); gsel.innerHTML="";
+    Groups.names(s.groups).forEach(g=>{
+      const o=document.createElement("option");
+      o.value=g; o.textContent=g;
+      gsel.appendChild(o);
+    });
+    gsel.value=p.group;
+    document.getElementById("activityDialog").showModal();
+  },
+
+  wire(){
+    document.getElementById("actDlgOk").onclick=()=>{
+      const { id, day } = Store.activityDialog();
+      Store.mutate(()=>{
+        Week.updateActivity(day, id, {
+          shift:document.getElementById("actDlgShift").value,
+          group:document.getElementById("actDlgGroup").value,
+        });
+      });
+      document.getElementById("activityDialog").close();
+    };
+    document.getElementById("actDlgCancel").onclick=()=>document.getElementById("activityDialog").close();
+    document.getElementById("actDlgRemove").onclick=()=>{
+      const { id, day } = Store.activityDialog();
+      Store.mutate(()=>{ Week.removeActivity(day, id); });
+      document.getElementById("activityDialog").close();
     };
   },
 };
@@ -975,6 +1217,109 @@ const GroupsDialog = {
   },
 };
 
+// ---------- ActivitiesDialog ----------
+const ActivitiesDialog = {
+  newIcon: null,
+
+  open(){
+    ActivitiesDialog.renderList();
+    ActivitiesDialog.resetNewIcon();
+    document.getElementById("activitiesDialog").showModal();
+  },
+
+  resetNewIcon(){
+    ActivitiesDialog.newIcon=Activities.defaultIcon(Store.get().activities);
+    ActivitiesDialog.renderNewIcons();
+  },
+
+  renderIcons(container, selected, onPick){
+    container.innerHTML="";
+    Constants.ACTIVITY_ICONS.forEach(icon=>{
+      const b=document.createElement("button");
+      b.type="button";
+      b.className="icon-swatch"+(icon===selected?" selected":"");
+      b.dataset.icon=icon;
+      b.textContent=icon;
+      b.title=icon;
+      b.setAttribute("aria-label","Icon "+icon);
+      b.onclick=()=>onPick(icon);
+      container.appendChild(b);
+    });
+  },
+
+  renderNewIcons(){
+    ActivitiesDialog.renderIcons(
+      document.getElementById("newActivityIcons"),
+      ActivitiesDialog.newIcon,
+      icon=>{ ActivitiesDialog.newIcon=icon; ActivitiesDialog.renderNewIcons(); }
+    );
+  },
+
+  renderList(){
+    const s=Store.get();
+    const box=document.getElementById("activitiesList");
+    box.innerHTML="";
+    Activities.all(s.activities).forEach(a=>{
+      const name=a.name;
+      const row=document.createElement("div");
+      row.className="staffrow actrow";
+      row.dataset.activity=name;
+      const ico=document.createElement("span");
+      ico.className="ico";
+      ico.textContent=Activities.iconOf(s.activities,name);
+      row.appendChild(ico);
+      const nm=document.createElement("span");
+      nm.className="nm";
+      nm.textContent=name;
+      row.appendChild(nm);
+      const del=document.createElement("button");
+      del.className="del";
+      del.textContent="Löschen";
+      del.title="Endgültig entfernen (nur möglich, wenn nirgends eingeplant)";
+      del.onclick=()=>{
+        if(Activities.isUsed(s.weeks,name)){
+          alert(name+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden.");
+          return;
+        }
+        if(!confirm(name+" endgültig löschen?"))return;
+        Store.mutateQuiet(st=>{ Activities.remove(st.activities,name); });
+        ActivitiesDialog.renderList();
+        ActivitiesDialog.resetNewIcon();
+      };
+      row.appendChild(del);
+      const icons=document.createElement("div");
+      icons.className="icon-swatches";
+      ActivitiesDialog.renderIcons(icons, Activities.iconOf(s.activities,name), icon=>{
+        Store.mutateQuiet(st=>{ Activities.setIcon(st.activities,name,icon); });
+        ActivitiesDialog.renderList();
+        ActivitiesDialog.resetNewIcon();
+      });
+      row.appendChild(icons);
+      box.appendChild(row);
+    });
+    if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">Noch keine Aktivitäten angelegt.</div>';
+  },
+
+  wire(){
+    document.getElementById("btnActivities").onclick=ActivitiesDialog.open;
+    document.getElementById("activitiesClose").onclick=()=>{
+      document.getElementById("activitiesDialog").close();
+      Store.notify();
+    };
+    document.getElementById("newActivityAdd").onclick=()=>{
+      const name=document.getElementById("newActivityName").value.trim();
+      if(!name){alert("Bitte einen Namen eingeben.");return;}
+      if(Activities.has(Store.get().activities,name)){alert("Es gibt bereits eine Aktivität mit diesem Namen.");return;}
+      const icon=ActivitiesDialog.newIcon || Activities.defaultIcon(Store.get().activities);
+      Store.mutateQuiet(st=>{ Activities.add(st.activities,name,icon); });
+      document.getElementById("newActivityName").value="";
+      ActivitiesDialog.renderList();
+      ActivitiesDialog.resetNewIcon();
+      View.flash(name+" hinzugefügt");
+    };
+  },
+};
+
 // ---------- Persistence ----------
 const Persistence = {
   normalize(raw){
@@ -982,6 +1327,10 @@ const Persistence = {
     if(!raw.weeks) raw.weeks={};
     if(!Array.isArray(raw.groups)) raw.groups=[];
     if(!Array.isArray(raw.staff)) raw.staff=[];
+    if(!Array.isArray(raw.activities)) raw.activities=[];
+    Object.values(raw.weeks).forEach(wk=>{
+      (wk.days||[]).forEach(d=>{ if(!Array.isArray(d.activities)) d.activities=[]; });
+    });
     return raw;
   },
 
@@ -1070,10 +1419,14 @@ const Print = {
     return '<span class="'+cls+'">'+inner+'</span>';
   },
 
-  buildDay(wk,di,staff,groups){
+  activityHtml(entry){
+    return '<span class="pr-act">'+Print.esc(entry.icon)+' '+Print.esc(entry.name)+'</span>';
+  },
+
+  buildDay(wk,di,staff,groups,activities){
     const mon=Dates.toDate(wk.mondayISO);
     const day=wk.days[di];
-    const vm=ViewModel.forDay(day,staff,groups);
+    const vm=ViewModel.forDay(day,staff,groups,activities);
     const closed=vm.mode==="Schließung";
     let html='<div class="pr-day">';
     html+='<div class="pr-dayhead">'
@@ -1089,13 +1442,18 @@ const Print = {
 
     Groups.names(groups).forEach(g=>{
       const byShift=vm.cells[g]||{frueh:[],mittel:[],spaet:[]};
+      const actByShift=vm.activityCells[g]||{frueh:[],mittel:[],spaet:[]};
       const col=View.groupColor(g);
-      const cell=arr=>arr.length?arr.map(Print.personHtml).join(""):'<span class="empty">–</span>';
+      const cell=sk=>{
+        const parts=(byShift[sk]||[]).map(Print.personHtml)
+          .concat((actByShift[sk]||[]).map(Print.activityHtml));
+        return parts.length?parts.join(""):'<span class="empty">–</span>';
+      };
       html+='<tr>'
           +'<td class="grp" style="background:'+col+'">'+Print.esc(g)+'</td>'
-          +'<td class="shift s-frueh">'+cell(byShift.frueh)+'</td>'
-          +'<td class="shift s-mittel">'+cell(byShift.mittel)+'</td>'
-          +'<td class="shift s-spaet">'+cell(byShift.spaet)+'</td>'
+          +'<td class="shift s-frueh">'+cell("frueh")+'</td>'
+          +'<td class="shift s-mittel">'+cell("mittel")+'</td>'
+          +'<td class="shift s-spaet">'+cell("spaet")+'</td>'
           +'<td class="cmt">'+Print.esc(vm.comments[g]||"")+'</td>'
           +'</tr>';
     });
@@ -1108,14 +1466,14 @@ const Print = {
     return html;
   },
 
-  buildWeek(wk,staff,groups){
+  buildWeek(wk,staff,groups,activities){
     const mon=Dates.toDate(wk.mondayISO);
     let html='<section class="pr-week">';
     html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
         +'<span class="sub">Woche '+Dates.fmtDE(mon)+' – '+Dates.fmtDE(Dates.addDays(mon,4))+'</span></div>';
     if(wk.houseInfo && wk.houseInfo.trim())
       html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+Print.esc(wk.houseInfo)+'</div>';
-    Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups); });
+    Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups,activities); });
     html+='<div class="pr-legend">';
     Groups.names(groups).forEach(g=>{
       html+='<span><span class="sw" style="background:'+View.groupColor(g)+'"></span>'+Print.esc(g)+'</span>';
@@ -1128,11 +1486,11 @@ const Print = {
 
   doPrint(scope){
     const root=document.getElementById("printRoot");
-    const {staff,groups,weeks}=Store.get();
+    const {staff,groups,weeks,activities}=Store.get();
     let keys;
     if(scope==="all") keys=Object.keys(weeks).sort();
     else keys=[Store.weekKey()];
-    root.innerHTML=keys.map(k=>Print.buildWeek(weeks[k],staff,groups)).join("");
+    root.innerHTML=keys.map(k=>Print.buildWeek(weeks[k],staff,groups,activities)).join("");
     setTimeout(()=>{ window.print(); }, 60);
   },
 
@@ -1203,8 +1561,10 @@ const App = {
     };
 
     ChipDialog.wire();
+    ActivityDialog.wire();
     StaffDialog.wire();
     GroupsDialog.wire();
+    ActivitiesDialog.wire();
     Persistence.wire();
     Print.wire();
   },

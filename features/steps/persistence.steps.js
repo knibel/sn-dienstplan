@@ -54,6 +54,14 @@ Then("kann ich den Druckumfang {string} wählen", async function (label) {
   assert.ok(options.includes(label), `Druckumfang "${label}" fehlt`);
 });
 
+Then("enthält die Druckansicht der aktuellen Woche {string}", async function (fragment) {
+  const html = await this.page.evaluate(() => {
+    const s = Store.get();
+    return Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s.activities);
+  });
+  assert.ok(html.includes(fragment), `Druckansicht sollte "${fragment}" enthalten`);
+});
+
 When("ich den Druckdialog abbreche", async function () {
   await this.page.locator("#printCancel").click();
 });

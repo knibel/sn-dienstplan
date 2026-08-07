@@ -12,3 +12,7 @@ Funktionalität: Export und Druck
     Und kann ich den Druckumfang "Alle erfassten Wochen" wählen
     Wenn ich den Druckdialog abbreche
     Dann ist der Druckdialog geschlossen
+
+  Szenario: Druckansicht enthält Personal und geplante Aktivitäten
+    Dann enthält die Druckansicht der aktuellen Woche "Gül"
+    Und enthält die Druckansicht der aktuellen Woche "🤸 Turnen"
