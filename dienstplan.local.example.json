@@ -1,6 +1,38 @@
 {
   "weekStartISO": null,
-  "weeks": {},
+  "weeks": {
+    "2024-01-01": {
+      "mondayISO": "2024-01-01",
+      "houseInfo": "",
+      "days": [
+        {
+          "mode": "Normalbetrieb",
+          "info": "",
+          "comments": {},
+          "assign": {
+            "Vivien": { "shift": "spaet", "group": "Mäuse", "away": "" },
+            "Gül": { "shift": "frueh", "group": "Mäuse", "away": "" },
+            "Chantal": { "shift": "frueh", "group": "Mäuse", "away": "" },
+            "Daniela": { "shift": "spaet", "group": "Hasen", "away": "" },
+            "Barbara": { "shift": "mittel", "group": "Hasen", "away": "" },
+            "Daniel": { "shift": "frueh", "group": "Hasen", "away": "" },
+            "Sabrina": { "shift": "spaet", "group": "Mäuschen", "away": "" },
+            "Melli": { "shift": "mittel", "group": "Mäuschen", "away": "" },
+            "Lena": { "shift": "frueh", "group": "Mäuschen", "away": "" },
+            "Thomas": { "shift": "spaet", "group": "Häschen", "away": "" },
+            "Maria": { "shift": "mittel", "group": "Häschen", "away": "" },
+            "Viktoria": { "shift": "frueh", "group": "Häschen", "away": "" },
+            "Birgit": { "shift": "frueh", "group": "Springer", "away": "" },
+            "Beate": { "shift": "frueh", "group": "Leitung", "away": "" }
+          }
+        },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} }
+      ]
+    }
+  },
   "groups": [
     { "name": "Mäuse", "color": "#e8623c" },
     { "name": "Hasen", "color": "#3f8f5b" },
@@ -11,19 +43,19 @@
     { "name": "Leitung", "color": "#5a6472" }
   ],
   "staff": [
-    { "name": "Vivien", "stamm": "Mäuse", "shift": "spaet", "active": true },
-    { "name": "Gül", "stamm": "Mäuse", "shift": "frueh", "active": true },
-    { "name": "Chantal", "stamm": "Mäuse", "shift": "frueh", "active": true },
-    { "name": "Daniela", "stamm": "Hasen", "shift": "spaet", "active": true },
-    { "name": "Barbara", "stamm": "Hasen", "shift": "mittel", "active": true },
-    { "name": "Daniel", "stamm": "Hasen", "shift": "frueh", "active": true },
-    { "name": "Sabrina", "stamm": "Mäuschen", "shift": "spaet", "active": true },
-    { "name": "Melli", "stamm": "Mäuschen", "shift": "mittel", "active": true },
-    { "name": "Lena", "stamm": "Mäuschen", "shift": "frueh", "active": true },
-    { "name": "Thomas", "stamm": "Häschen", "shift": "spaet", "active": true },
-    { "name": "Maria", "stamm": "Häschen", "shift": "mittel", "active": true },
-    { "name": "Viktoria", "stamm": "Häschen", "shift": "frueh", "active": true },
-    { "name": "Birgit", "stamm": "Springer", "shift": "frueh", "active": true },
-    { "name": "Beate", "stamm": "Leitung", "shift": "frueh", "active": true }
+    { "name": "Vivien", "stamm": "Mäuse", "active": true },
+    { "name": "Gül", "stamm": "Mäuse", "active": true },
+    { "name": "Chantal", "stamm": "Mäuse", "active": true },
+    { "name": "Daniela", "stamm": "Hasen", "active": true },
+    { "name": "Barbara", "stamm": "Hasen", "active": true },
+    { "name": "Daniel", "stamm": "Hasen", "active": true },
+    { "name": "Sabrina", "stamm": "Mäuschen", "active": true },
+    { "name": "Melli", "stamm": "Mäuschen", "active": true },
+    { "name": "Lena", "stamm": "Mäuschen", "active": true },
+    { "name": "Thomas", "stamm": "Häschen", "active": true },
+    { "name": "Maria", "stamm": "Häschen", "active": true },
+    { "name": "Viktoria", "stamm": "Häschen", "active": true },
+    { "name": "Birgit", "stamm": "Springer", "active": true },
+    { "name": "Beate", "stamm": "Leitung", "active": true }
   ]
 }

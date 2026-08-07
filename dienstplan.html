@@ -241,11 +241,6 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
       <input id="newName" placeholder="Name" style="flex:1;min-width:110px">
       <select id="newGroup" style="flex:1;min-width:110px"></select>
-      <select id="newShift" style="width:120px">
-        <option value="frueh">Frühschicht</option>
-        <option value="mittel">Mittelschicht</option>
-        <option value="spaet">Spätschicht</option>
-      </select>
       <button id="newAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
     </div>
   </div>
@@ -346,8 +341,8 @@ const Staff = {
   isUsed(weeks,name){
     return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>d.assign && (name in d.assign)));
   },
-  create({name,stamm,shift}){
-    return {name,stamm,shift,active:true};
+  create({name,stamm}){
+    return {name,stamm,active:true};
   },
   removeAt(staff,index){
     staff.splice(index,1);
@@ -416,7 +411,7 @@ const Week = {
   },
   defaultAssign(staff){
     const a={};
-    Staff.active(staff).forEach(s=>{ a[s.name]={shift:s.shift,group:s.stamm,away:""}; });
+    Staff.active(staff).forEach(s=>{ a[s.name]={shift:Constants.SHIFT_KEYS[0],group:s.stamm,away:""}; });
     return a;
   },
   fillEmptyDays(week,staff){
@@ -512,7 +507,7 @@ const ViewModel = {
 // ---------- Store (get / mutate / subscribe) ----------
 const Store = (() => {
   // groups: [{name, color}]
-  // staff: [{name,stamm,shift,active}]
+  // staff: [{name,stamm,active}]
   // weekKey -> {mondayISO, days:[{mode,info,assign,comments}], houseInfo}
   let state = { weekStartISO:null, weeks:{}, groups:[], staff:[] };
   let curWeekKey = null;
@@ -824,11 +819,6 @@ const StaffDialog = {
         dot.style.background=View.groupColor(person.stamm);
       };
       row.appendChild(gs);
-      const ss=document.createElement("select");
-      Constants.SHIFTS.forEach(([k,l])=>{const o=document.createElement("option");o.value=k;o.textContent=l;ss.appendChild(o);});
-      ss.value=person.shift;
-      ss.onchange=()=>{ Store.mutateQuiet(()=>{ person.shift=ss.value; }); };
-      row.appendChild(ss);
       if(person.active===false){
         const b=document.createElement("button");b.textContent="Aktivieren";
         b.onclick=()=>{
@@ -876,7 +866,6 @@ const StaffDialog = {
         st.staff.push(Staff.create({
           name,
           stamm:document.getElementById("newGroup").value,
-          shift:document.getElementById("newShift").value,
         }));
       });
       document.getElementById("newName").value="";

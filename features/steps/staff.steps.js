@@ -17,11 +17,10 @@ Then("sehe ich im Personal-Dialog die Person {string}", async function (name) {
 });
 
 When(
-  "ich eine neue Person {string} in Gruppe {string} mit Schicht {string} hinzufüge",
-  async function (name, group, shift) {
+  "ich eine neue Person {string} in Gruppe {string} hinzufüge",
+  async function (name, group) {
     await this.page.locator("#newName").fill(name);
     await this.page.locator("#newGroup").selectOption({ label: group });
-    await this.page.locator("#newShift").selectOption({ label: shift });
     await this.page.locator("#newAdd").click();
     await this.page.locator("#staffList .staffrow", { hasText: name }).waitFor();
   }

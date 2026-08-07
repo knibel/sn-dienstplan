@@ -13,11 +13,11 @@ Funktionalität: Personalverwaltung
 
   Szenario: Neue Person hinzufügen
     Wenn ich den Personal-Dialog öffne
-    Und ich eine neue Person "Nora" in Gruppe "Springer" mit Schicht "Mittelschicht" hinzufüge
+    Und ich eine neue Person "Nora" in Gruppe "Springer" hinzufüge
     Dann sehe ich im Personal-Dialog die Person "Nora"
     Wenn ich den Personal-Dialog schließe
     Und ich die Woche zurücksetze
-    Dann ist "Nora" in Gruppe "Springer" und Schicht "Mittelschicht" eingeteilt
+    Dann ist "Nora" in Gruppe "Springer" und Schicht "Frühschicht" eingeteilt
 
   Szenario: Person deaktivieren entfernt sie aus neuen Standardzuteilungen
     Wenn ich den Personal-Dialog öffne
