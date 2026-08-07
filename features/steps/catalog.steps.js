@@ -77,6 +77,52 @@ When(
   }
 );
 
+// Einträge ohne Namen werden über ihr Symbol angesprochen.
+When(
+  /^ich einen neuen Eintrag ohne Namen mit Icon "([^"]*)" hinzufüge$/,
+  async function (icon) {
+    await this.page.locator("#newItemName").fill("");
+    await this.page.locator(`#newItemIcons .icon-swatch[data-icon="${icon}"]`).click();
+    await this.page.locator("#newItemAdd").click();
+    await catalogRow(this.page, icon).waitFor();
+  }
+);
+
+When(
+  /^ich versuche einen Eintrag ohne Namen mit Icon "([^"]*)" hinzuzufügen$/,
+  async function (icon) {
+    await this.page.locator("#newItemName").fill("");
+    await this.page.locator(`#newItemIcons .icon-swatch[data-icon="${icon}"]`).click();
+    const dialogPromise = this.captureNextDialog();
+    await this.page.locator("#newItemAdd").click();
+    await dialogPromise;
+  }
+);
+
+Then(
+  /^ist der Eintrag "([^"]*)" im Sonstiges-Dialog namenlos$/,
+  async function (icon) {
+    const shown = await catalogRow(this.page, icon).locator(".nm").innerText();
+    assert.strictEqual(shown.trim(), "", `Eintrag ${icon} sollte keinen Namen zeigen`);
+  }
+);
+
+Then(
+  /^zeigt (?:die|der) (?:Aktivität|Eintrag) "([^"]*)" im (Aktivitäten|Sonstiges)-Pool nur das Icon "([^"]*)"$/,
+  async function (key, label, icon) {
+    const shown = await poolChip(this.page, catOfLabel(label), key).innerText();
+    assert.strictEqual(shown.trim(), icon, `Pool-Chip sollte nur ${icon} zeigen, war "${shown}"`);
+  }
+);
+
+Then(
+  /^zeigt (?:die geplante|der geplante) (Aktivität|Eintrag) "([^"]*)" in Gruppe "([^"]*)" und Schicht "([^"]*)" nur das Icon "([^"]*)"$/,
+  async function (noun, key, group, shiftLabel, icon) {
+    const shown = await plannedChip(this, catOfNoun(noun), key, group, shiftLabel).first().innerText();
+    assert.strictEqual(shown.trim(), icon, `Chip im Raster sollte nur ${icon} zeigen, war "${shown}"`);
+  }
+);
+
 When(
   /^ich das Icon (?:der Aktivität|des Eintrags) "([^"]*)" auf "([^"]*)" setze$/,
   async function (name, icon) {

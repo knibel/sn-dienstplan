@@ -62,6 +62,22 @@ Then("enthält die Druckansicht der aktuellen Woche {string}", async function (f
   assert.ok(html.includes(fragment), `Druckansicht sollte "${fragment}" enthalten`);
 });
 
+Then(
+  "zeigt die Druckansicht der aktuellen Woche einen Eintrag nur mit Icon {string}",
+  async function (icon) {
+    const texts = await this.page.evaluate(() => {
+      const s = Store.get();
+      const box = document.createElement("div");
+      box.innerHTML = Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s);
+      return [...box.querySelectorAll(".pr-item")].map((el) => el.textContent.trim());
+    });
+    assert.ok(
+      texts.includes(icon),
+      `Druckansicht sollte einen Eintrag "${icon}" ohne Namen zeigen, gefunden: ${texts.join(" | ")}`
+    );
+  }
+);
+
 Then("läuft in der Druckansicht keine Schichtzelle seitlich über ihre Zelle hinaus", async function () {
   // Druckmedium emulieren, damit #printRoot sichtbar wird und die Druck-Stylesheets greifen.
   await this.page.emulateMedia({ media: "print" });

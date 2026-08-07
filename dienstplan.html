@@ -361,7 +361,9 @@ const Constants = {
     {
       key:"misc", listKey:"misc",
       label:"Sonstiges", noun:"Eintrag", newLabel:"Neuer Eintrag",
-      placeholder:"Name, z.B. Weihnachtsfeier",
+      placeholder:"Name (optional), z.B. Weihnachtsfeier",
+      // Einträge ohne Namen sind erlaubt – dann zeigt der Chip nur das Symbol.
+      allowNameless:true,
       emptyNote:"Noch keine Einträge angelegt.",
       buttonId:"btnMisc", poolId:"miscPool",
       icons:["⭐","🌠","🎄","🎁","🕯️","⛄","❄️","🌸","🌻","🍂","🌈","🎃","🐰","🥚","🔔","📷","🎪","🗓️","📋","📢","🧹","🚑","⚠️","🏆"],
@@ -476,6 +478,9 @@ const Groups = {
 // ---------- Catalog (rein) ----------
 // Katalog einer Kategorie: [{name, icon}]  (icon = Emoji, z.B. "⚽")
 // `cat` ist immer eine Kategorie aus Constants.CATEGORIES.
+// Ein Eintrag wird über seinen Schlüssel angesprochen: den Namen, bei
+// namenlosen Einträgen (nur Symbol) das Symbol. Planungen speichern diesen
+// Schlüssel im Feld `name` einer Platzierung.
 const Catalog = {
   /** Liste einer Kategorie aus dem State (Katalog) bzw. aus einem Tag (Planung).
       Fehlt sie, wird sie leer angelegt – so bleiben alte Stände nutzbar. */
@@ -485,12 +490,18 @@ const Catalog = {
     return holder[cat.listKey];
   },
   all(list){ return list||[]; },
-  names(list){ return Catalog.all(list).map(a=>a.name); },
-  find(list,name){ return Catalog.all(list).find(a=>a.name===name); },
-  has(list,name){ return !!Catalog.find(list,name); },
-  iconOf(cat,list,name){
-    const a=Catalog.find(list,name);
+  /** Schlüssel eines Eintrags: der Name, bei namenlosen Einträgen das Symbol. */
+  keyOf(item){ return (item && (item.name || item.icon)) || ""; },
+  find(list,key){ return Catalog.all(list).find(a=>Catalog.keyOf(a)===key); },
+  has(list,key){ return !!Catalog.find(list,key); },
+  iconOf(cat,list,key){
+    const a=Catalog.find(list,key);
     return (a && a.icon) || cat.icons[0];
+  },
+  /** Anzeigename eines Eintrags – leer bei namenlosen Einträgen. */
+  nameOf(list,key){
+    const a=Catalog.find(list,key);
+    return a ? a.name : key;
   },
   usedIcons(list){
     return new Set(Catalog.all(list).map(a=>a.icon).filter(Boolean));
@@ -500,24 +511,31 @@ const Catalog = {
     const used=Catalog.usedIcons(list);
     return cat.icons.find(i=>!used.has(i)) || cat.icons[0];
   },
-  isUsed(cat,weeks,name){
+  isUsed(cat,weeks,key){
     return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
-      Catalog.listOf(cat,d).some(p=>p.name===name)
+      Catalog.listOf(cat,d).some(p=>p.name===key)
     ));
   },
   add(cat,list,name,icon){
     list.push({name, icon:icon || Catalog.defaultIcon(cat,list)});
     return list;
   },
-  remove(list,name){
-    const i=Catalog.all(list).findIndex(a=>a.name===name);
+  remove(list,key){
+    const i=Catalog.all(list).findIndex(a=>Catalog.keyOf(a)===key);
     if(i>=0) list.splice(i,1);
     return list;
   },
-  setIcon(list,name,icon){
-    const a=Catalog.find(list,name);
+  setIcon(list,key,icon){
+    const a=Catalog.find(list,key);
     if(a) a.icon=icon;
     return list;
+  },
+  /** Schlüssel in allen Planungen umschreiben (nötig, wenn ein namenloser
+      Eintrag ein anderes Symbol bekommt). */
+  rekey(cat,weeks,oldKey,newKey){
+    Object.values(weeks||{}).forEach(wk=>(wk.days||[]).forEach(d=>
+      Catalog.listOf(cat,d).forEach(p=>{ if(p.name===oldKey) p.name=newKey; })
+    ));
   },
 };
 
@@ -639,7 +657,8 @@ const ViewModel = {
     return {
       cat:cat.key,
       id:placement.id,
-      name:placement.name,
+      key:placement.name,
+      name:Catalog.nameOf(list,placement.name),
       icon:Catalog.iconOf(cat,list,placement.name),
       group:placement.group,
       shift:placement.shift,
@@ -896,17 +915,18 @@ const View = {
     c.className="chip item";
     c.draggable=true;
     c.dataset.cat=entry.cat;
-    c.dataset.item=entry.name;
+    c.dataset.item=entry.key;
     const ico=document.createElement("span");
     ico.className="ico"; ico.textContent=entry.icon;
     c.appendChild(ico);
-    c.appendChild(document.createTextNode(entry.name));
+    // Namenlose Einträge zeigen nur das Symbol.
+    if(entry.name) c.appendChild(document.createTextNode(entry.name));
     if(entry.id){
       c.dataset.placement=entry.id;
       c.ondragstart=e=>{const t=Drag.placement(entry.cat,entry.id);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
       c.onclick=()=>ItemDialog.open(Constants.category(entry.cat),entry.id);
     }else{
-      c.ondragstart=e=>{const t=Drag.item(entry.cat,entry.name);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
+      c.ondragstart=e=>{const t=Drag.item(entry.cat,entry.key);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
     }
     return c;
   },
@@ -930,8 +950,9 @@ const View = {
       const box=document.getElementById(cat.poolId); box.innerHTML="";
       const list=Catalog.listOf(cat,catalogs);
       Catalog.all(list).forEach(a=>{
+        const key=Catalog.keyOf(a);
         box.appendChild(View.makeItemChip({
-          cat:cat.key, name:a.name, icon:Catalog.iconOf(cat,list,a.name),
+          cat:cat.key, key, name:a.name, icon:Catalog.iconOf(cat,list,key),
         }));
       });
       if(!box.children.length)
@@ -1044,8 +1065,9 @@ const ItemDialog = {
     const s=Store.get();
     const dlg=document.getElementById("itemDialog");
     dlg.dataset.cat=cat.key;
+    const list=Catalog.listOf(cat,s);
     document.getElementById("itemDlgName").textContent=
-      Catalog.iconOf(cat,Catalog.listOf(cat,s),p.name)+"  "+p.name;
+      (Catalog.iconOf(cat,list,p.name)+"  "+Catalog.nameOf(list,p.name)).trim();
     document.getElementById("itemDlgShift").value=p.shift;
     const gsel=document.getElementById("itemDlgGroup"); gsel.innerHTML="";
     Groups.names(s.groups).forEach(g=>{
@@ -1324,44 +1346,61 @@ const CatalogDialog = {
     const box=document.getElementById("catalogList");
     box.innerHTML="";
     Catalog.all(list).forEach(a=>{
-      const name=a.name;
+      const key=Catalog.keyOf(a);
+      // Namenlose Einträge werden in Meldungen über ihr Symbol benannt.
+      const label=a.name || cat.noun+" "+a.icon;
       const row=document.createElement("div");
       row.className="staffrow actrow";
-      row.dataset.item=name;
+      row.dataset.item=key;
       const ico=document.createElement("span");
       ico.className="ico";
-      ico.textContent=Catalog.iconOf(cat,list,name);
+      ico.textContent=Catalog.iconOf(cat,list,key);
       row.appendChild(ico);
       const nm=document.createElement("span");
       nm.className="nm";
-      nm.textContent=name;
+      nm.textContent=a.name;
       row.appendChild(nm);
       const del=document.createElement("button");
       del.className="del";
       del.textContent="Löschen";
       del.title="Endgültig entfernen (nur möglich, wenn nirgends eingeplant)";
       del.onclick=()=>{
-        if(Catalog.isUsed(cat,s.weeks,name)){
-          alert(name+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden.");
+        if(Catalog.isUsed(cat,s.weeks,key)){
+          alert(label+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden.");
           return;
         }
-        if(!confirm(name+" endgültig löschen?"))return;
-        Store.mutateQuiet(()=>{ Catalog.remove(CatalogDialog.list(),name); });
+        if(!confirm(label+" endgültig löschen?"))return;
+        Store.mutateQuiet(()=>{ Catalog.remove(CatalogDialog.list(),key); });
         CatalogDialog.renderList();
         CatalogDialog.resetNewIcon();
       };
       row.appendChild(del);
       const icons=document.createElement("div");
       icons.className="icon-swatches";
-      CatalogDialog.renderIcons(icons, Catalog.iconOf(cat,list,name), icon=>{
-        Store.mutateQuiet(()=>{ Catalog.setIcon(CatalogDialog.list(),name,icon); });
-        CatalogDialog.renderList();
-        CatalogDialog.resetNewIcon();
+      CatalogDialog.renderIcons(icons, Catalog.iconOf(cat,list,key), icon=>{
+        CatalogDialog.changeIcon(key, a.name, icon);
       });
       row.appendChild(icons);
       box.appendChild(row);
     });
     if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">'+cat.emptyNote+'</div>';
+  },
+
+  /** Symbol eines Eintrags ändern. Bei namenlosen Einträgen ist das Symbol der
+      Schlüssel – dann ziehen die Planungen mit um. */
+  changeIcon(key, name, icon){
+    const cat=CatalogDialog.cat;
+    const newKey=name || icon;
+    if(newKey!==key && Catalog.has(CatalogDialog.list(),newKey)){
+      alert(cat.noun+" mit Symbol "+icon+" gibt es bereits.");
+      return;
+    }
+    Store.mutateQuiet(s=>{
+      Catalog.setIcon(CatalogDialog.list(),key,icon);
+      if(newKey!==key) Catalog.rekey(cat,s.weeks,key,newKey);
+    });
+    CatalogDialog.renderList();
+    CatalogDialog.resetNewIcon();
   },
 
   wire(){
@@ -1375,14 +1414,21 @@ const CatalogDialog = {
     document.getElementById("newItemAdd").onclick=()=>{
       const cat=CatalogDialog.cat;
       const name=document.getElementById("newItemName").value.trim();
-      if(!name){alert("Bitte einen Namen eingeben.");return;}
-      if(Catalog.has(CatalogDialog.list(),name)){alert(cat.noun+" „"+name+"“ gibt es bereits.");return;}
+      if(!name && !cat.allowNameless){alert("Bitte einen Namen eingeben.");return;}
       const icon=CatalogDialog.newIcon || Catalog.defaultIcon(cat, CatalogDialog.list());
+      // Ohne Namen dient das Symbol als Schlüssel – es kann dann nur einmal vergeben werden.
+      const key=name || icon;
+      if(Catalog.has(CatalogDialog.list(),key)){
+        alert(name
+          ? cat.noun+" „"+name+"“ gibt es bereits."
+          : cat.noun+" mit Symbol "+icon+" gibt es bereits.");
+        return;
+      }
       Store.mutateQuiet(()=>{ Catalog.add(cat, CatalogDialog.list(), name, icon); });
       document.getElementById("newItemName").value="";
       CatalogDialog.renderList();
       CatalogDialog.resetNewIcon();
-      View.flash(name+" hinzugefügt");
+      View.flash((name || icon)+" hinzugefügt");
     };
   },
 };
@@ -1490,7 +1536,8 @@ const Print = {
   },
 
   itemHtml(entry){
-    return '<span class="pr-item">'+Print.esc(entry.icon)+' '+Print.esc(entry.name)+'</span>';
+    return '<span class="pr-item">'+Print.esc(entry.icon)
+      +(entry.name?' '+Print.esc(entry.name):'')+'</span>';
   },
 
   buildDay(wk,di,staff,groups,catalogs){

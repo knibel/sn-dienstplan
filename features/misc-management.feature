@@ -26,10 +26,56 @@ Funktionalität: Sonstiges
     Wenn ich den Sonstiges-Dialog schließe
     Dann zeigt der Eintrag "Sommerfest" im Sonstiges-Pool das Icon "🌻"
 
-  Szenario: Leerer Name wird abgelehnt
+  Szenario: Eintrag ohne Namen anlegen – nur das Symbol steht im Plan
     Wenn ich den Sonstiges-Dialog öffne
-    Und ich versuche einen Eintrag ohne Namen hinzuzufügen
-    Dann erscheint eine Meldung die "Bitte einen Namen eingeben" enthält
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎁" hinzufüge
+    Dann hat der Eintrag "🎁" das Icon "🎁"
+    Und ist der Eintrag "🎁" im Sonstiges-Dialog namenlos
+    Wenn ich den Sonstiges-Dialog schließe
+    Dann zeigt der Eintrag "🎁" im Sonstiges-Pool nur das Icon "🎁"
+
+  Szenario: Namenlosen Eintrag einplanen
+    Wenn ich den Sonstiges-Dialog öffne
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎁" hinzufüge
+    Und ich den Sonstiges-Dialog schließe
+    Und ich den Eintrag "🎁" in Gruppe "Sonne" und Schicht "Spätschicht" ziehe
+    Dann ist der Eintrag "🎁" in Gruppe "Sonne" und Schicht "Spätschicht" eingeplant
+    Und zeigt der geplante Eintrag "🎁" in Gruppe "Sonne" und Schicht "Spätschicht" nur das Icon "🎁"
+    Und zeigt die Druckansicht der aktuellen Woche einen Eintrag nur mit Icon "🎁"
+
+  Szenario: Mehrere namenlose Einträge mit verschiedenen Symbolen
+    Wenn ich den Sonstiges-Dialog öffne
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎁" hinzufüge
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎪" hinzufüge
+    Dann sehe ich im Sonstiges-Dialog den Eintrag "🎁"
+    Und sehe ich im Sonstiges-Dialog den Eintrag "🎪"
+
+  Szenario: Zweiter namenloser Eintrag mit gleichem Symbol wird abgelehnt
+    Wenn ich den Sonstiges-Dialog öffne
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎁" hinzufüge
+    Und ich versuche einen Eintrag ohne Namen mit Icon "🎁" hinzuzufügen
+    Dann erscheint eine Meldung die "bereits" enthält
+
+  Szenario: Symbol eines eingeplanten namenlosen Eintrags ändern
+    Wenn ich den Sonstiges-Dialog öffne
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎁" hinzufüge
+    Und ich den Sonstiges-Dialog schließe
+    Und ich den Eintrag "🎁" in Gruppe "Mond" und Schicht "Mittelschicht" ziehe
+    Und ich den Sonstiges-Dialog öffne
+    Und ich das Icon des Eintrags "🎁" auf "🎪" setze
+    Und ich den Sonstiges-Dialog schließe
+    Dann ist der Eintrag "🎪" in Gruppe "Mond" und Schicht "Mittelschicht" eingeplant
+    Und erscheint der Eintrag "🎪" im Sonstiges-Pool
+
+  Szenario: Namenloser Eintrag bleibt nach dem Speichern erhalten
+    Wenn ich den Sonstiges-Dialog öffne
+    Und ich einen neuen Eintrag ohne Namen mit Icon "🎁" hinzufüge
+    Und ich den Sonstiges-Dialog schließe
+    Und ich den Eintrag "🎁" in Gruppe "Mond" und Schicht "Mittelschicht" ziehe
+    Und ich den Plan speichere
+    Und ich die Anwendung schließe und wieder öffne
+    Dann erscheint der Eintrag "🎁" im Sonstiges-Pool
+    Und ist der Eintrag "🎁" in Gruppe "Mond" und Schicht "Mittelschicht" eingeplant
 
   Szenario: Doppelter Name wird abgelehnt
     Wenn ich den Sonstiges-Dialog öffne
