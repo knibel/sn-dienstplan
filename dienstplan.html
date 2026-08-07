@@ -149,10 +149,10 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   table.pr-tbl td.s-mittel{background:#eaf4ff}
   table.pr-tbl td.s-spaet{background:#f0ecfb}
 
+  /* Trennung erfolgt in Print.buildDay (", ") – das Leerzeichen ist die Umbruchstelle.
+     nowrap hält den einzelnen Eintrag zusammen, umgebrochen wird nur zwischen Einträgen. */
   .pr-person{display:inline;white-space:nowrap}
-  .pr-person + .pr-person::before{content:", "}
   .pr-act{display:inline;white-space:nowrap;font-weight:700}
-  .pr-act + .pr-act::before,.pr-act + .pr-person::before,.pr-person + .pr-act::before{content:", "}
   .pr-person.away{color:#999}
   .pr-person.away.krank{text-decoration:line-through}
   .pr-person .tag{font-size:7pt;color:#666}
@@ -1447,7 +1447,7 @@ const Print = {
       const cell=sk=>{
         const parts=(byShift[sk]||[]).map(Print.personHtml)
           .concat((actByShift[sk]||[]).map(Print.activityHtml));
-        return parts.length?parts.join(""):'<span class="empty">–</span>';
+        return parts.length?parts.join(", "):'<span class="empty">–</span>';
       };
       html+='<tr>'
           +'<td class="grp" style="background:'+col+'">'+Print.esc(g)+'</td>'

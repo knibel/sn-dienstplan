@@ -62,6 +62,35 @@ Then("enthält die Druckansicht der aktuellen Woche {string}", async function (f
   assert.ok(html.includes(fragment), `Druckansicht sollte "${fragment}" enthalten`);
 });
 
+Then("läuft in der Druckansicht keine Schichtzelle seitlich über ihre Zelle hinaus", async function () {
+  // Druckmedium emulieren, damit #printRoot sichtbar wird und die Druck-Stylesheets greifen.
+  await this.page.emulateMedia({ media: "print" });
+  let overflowing;
+  try {
+    overflowing = await this.page.evaluate(() => {
+      const s = Store.get();
+      const root = document.getElementById("printRoot");
+      // Nutzbare Breite auf A4 quer bei 8mm Rand – sonst misst man die Viewportbreite.
+      root.style.width = "281mm";
+      root.innerHTML = Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s.activities);
+      const bad = [];
+      document.querySelectorAll("#printRoot td.shift").forEach((td) => {
+        if (td.scrollWidth > td.clientWidth + 1) bad.push(td.textContent.trim());
+      });
+      root.innerHTML = "";
+      root.style.width = "";
+      return bad;
+    });
+  } finally {
+    await this.page.emulateMedia({ media: null });
+  }
+  assert.deepStrictEqual(
+    overflowing,
+    [],
+    `Schichtzellen laufen seitlich über: ${overflowing && overflowing.join(" | ")}`
+  );
+});
+
 When("ich den Druckdialog abbreche", async function () {
   await this.page.locator("#printCancel").click();
 });

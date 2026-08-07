@@ -16,3 +16,10 @@ Funktionalität: Export und Druck
   Szenario: Druckansicht enthält Personal und geplante Aktivitäten
     Dann enthält die Druckansicht der aktuellen Woche "Bernd"
     Und enthält die Druckansicht der aktuellen Woche "🤸 Turnen"
+
+  Szenario: Volle Schichtzelle läuft im Druck nicht seitlich aus der Zelle
+    Angenommen ist "Bernd" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
+    Und ist "Clara" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
+    Wenn ich die Aktivität "Fußball spielen" in Gruppe "Sonne" und Schicht "Frühschicht" ziehe
+    Und ich die Aktivität "Elterncafé" in Gruppe "Sonne" und Schicht "Frühschicht" ziehe
+    Dann läuft in der Druckansicht keine Schichtzelle seitlich über ihre Zelle hinaus
