@@ -12,6 +12,9 @@
           "activities": [
             { "id": "1", "name": "Turnen", "group": "Sonne", "shift": "mittel" }
           ],
+          "misc": [
+            { "id": "1", "name": "Sommerfest", "group": "Mond", "shift": "frueh" }
+          ],
           "assign": {
             "Anna": { "shift": "spaet", "group": "Sonne", "away": "" },
             "Bernd": { "shift": "frueh", "group": "Sonne", "away": "" },
@@ -29,9 +32,9 @@
             "Nadine": { "shift": "frueh", "group": "Leitung", "away": "" }
           }
         },
-        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
-        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
-        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "misc": [], "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "misc": [], "assign": {} },
+        { "mode": "Normalbetrieb", "info": "", "comments": {}, "activities": [], "misc": [], "assign": {} },
         { "mode": "Normalbetrieb", "info": "", "comments": {}, "assign": {} }
       ]
     }
@@ -49,6 +52,11 @@
     { "name": "Fußball spielen", "icon": "⚽" },
     { "name": "Turnen", "icon": "🤸" },
     { "name": "Elterncafé", "icon": "☕" }
+  ],
+  "misc": [
+    { "name": "Sommerfest", "icon": "⭐" },
+    { "name": "Weihnachtsfeier", "icon": "🎄" },
+    { "name": "Fotograf", "icon": "📷" }
   ],
   "staff": [
     { "name": "Anna", "stamm": "Sonne", "active": true },

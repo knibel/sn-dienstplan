@@ -57,7 +57,7 @@ Then("kann ich den Druckumfang {string} wählen", async function (label) {
 Then("enthält die Druckansicht der aktuellen Woche {string}", async function (fragment) {
   const html = await this.page.evaluate(() => {
     const s = Store.get();
-    return Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s.activities);
+    return Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s);
   });
   assert.ok(html.includes(fragment), `Druckansicht sollte "${fragment}" enthalten`);
 });
@@ -72,7 +72,7 @@ Then("läuft in der Druckansicht keine Schichtzelle seitlich über ihre Zelle hi
       const root = document.getElementById("printRoot");
       // Nutzbare Breite auf A4 quer bei 8mm Rand – sonst misst man die Viewportbreite.
       root.style.width = "281mm";
-      root.innerHTML = Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s.activities);
+      root.innerHTML = Print.buildWeek(s.weeks[Store.weekKey()], s.staff, s.groups, s);
       const bad = [];
       document.querySelectorAll("#printRoot td.shift").forEach((td) => {
         if (td.scrollWidth > td.clientWidth + 1) bad.push(td.textContent.trim());

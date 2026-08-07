@@ -13,9 +13,10 @@ Funktionalität: Export und Druck
     Wenn ich den Druckdialog abbreche
     Dann ist der Druckdialog geschlossen
 
-  Szenario: Druckansicht enthält Personal und geplante Aktivitäten
+  Szenario: Druckansicht enthält Personal, Aktivitäten und Sonstiges
     Dann enthält die Druckansicht der aktuellen Woche "Bernd"
     Und enthält die Druckansicht der aktuellen Woche "🤸 Turnen"
+    Und enthält die Druckansicht der aktuellen Woche "⭐ Sommerfest"
 
   Szenario: Volle Schichtzelle läuft im Druck nicht seitlich aus der Zelle
     Angenommen ist "Bernd" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt

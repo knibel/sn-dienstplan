@@ -49,7 +49,7 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .pool h3.sec{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 .pool .poolnote{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4}
 #pool{min-height:60px}
-#activityPool{display:flex;flex-wrap:wrap;gap:4px}
+.itempool{display:flex;flex-wrap:wrap;gap:4px}
 .pool.dragover{outline:2px dashed var(--muted);outline-offset:-4px}
 
 /* ---- grid / chips ---- */
@@ -70,7 +70,7 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .chip.away-krank{opacity:.55;text-decoration:line-through}
 .chip.away-urlaub{opacity:.55}
 .chip small{font-size:9px;opacity:.85;background:rgba(0,0,0,.22);padding:1px 4px;border-radius:6px}
-.chip.activity{background:#fff;color:var(--ink);border:1.5px solid var(--line-strong);font-weight:600}
+.chip.item{background:#fff;color:var(--ink);border:1.5px solid var(--line-strong);font-weight:600}
 .chip .ico{font-size:14px;line-height:1}
 .commentcol{padding:6px;border-bottom:1px solid var(--line);background:#fafcfe}
 .commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:vertical;min-height:44px;background:#fff}
@@ -79,7 +79,7 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 dialog{border:none;border-radius:10px;padding:0;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:340px}
 #staffDialog{max-width:min(560px,95vw);width:560px}
 #groupsDialog{max-width:min(480px,95vw);width:480px}
-#activitiesDialog{max-width:min(520px,95vw);width:520px}
+#catalogDialog{max-width:min(520px,95vw);width:520px}
 .color-swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .icon-swatches{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .icon-swatch{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:15px;line-height:1;padding:0;flex:0 0 26px}
@@ -152,7 +152,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   /* Trennung erfolgt in Print.buildDay (", ") – das Leerzeichen ist die Umbruchstelle.
      nowrap hält den einzelnen Eintrag zusammen, umgebrochen wird nur zwischen Einträgen. */
   .pr-person{display:inline;white-space:nowrap}
-  .pr-act{display:inline;white-space:nowrap;font-weight:700}
+  .pr-item{display:inline;white-space:nowrap;font-weight:700}
   .pr-person.away{color:#999}
   .pr-person.away.krank{text-decoration:line-through}
   .pr-person .tag{font-size:7pt;color:#666}
@@ -196,7 +196,8 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <button id="btnStaff">👥 Personal</button>
   <button id="btnGroups">🧩 Gruppen</button>
   <button id="btnActivities">🎈 Aktivitäten</button>
-  <span class="hint">Mitarbeiter &amp; Aktivitäten per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
+  <button id="btnMisc">⭐ Sonstiges</button>
+  <span class="hint">Mitarbeiter, Aktivitäten &amp; Sonstiges per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
 </div>
 
 <div class="layout">
@@ -206,7 +207,10 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     <div id="pool"></div>
     <h3 class="sec">Aktivitäten</h3>
     <div class="poolnote">Ziehe eine Aktivität in eine Zelle – sie kann mehrfach eingeplant werden.</div>
-    <div id="activityPool"></div>
+    <div id="activityPool" class="itempool"></div>
+    <h3 class="sec">Sonstiges</h3>
+    <div class="poolnote">Ziehe einen Eintrag in eine Zelle – er kann mehrfach eingeplant werden.</div>
+    <div id="miscPool" class="itempool"></div>
   </aside>
   <main class="main">
     <div class="daytabs" id="dayTabs"></div>
@@ -279,35 +283,37 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <div class="btns"><button id="groupsClose" class="primary">Fertig</button></div>
 </div></dialog>
 
-<dialog id="activitiesDialog"><div class="dlg">
-  <h3>Aktivitäten verwalten</h3>
-  <div id="activitiesList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
+<!-- Katalog-Dialog: wird für jede Kategorie (Aktivitäten, Sonstiges) wiederverwendet -->
+<dialog id="catalogDialog"><div class="dlg">
+  <h3 id="catalogTitle"></h3>
+  <div id="catalogList" style="max-height:300px;overflow-y:auto;margin-bottom:12px"></div>
   <div style="border-top:1px solid var(--line);padding-top:10px">
-    <strong style="font-size:12px">Neue Aktivität</strong>
+    <strong id="catalogNewLabel" style="font-size:12px"></strong>
     <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
-      <input id="newActivityName" placeholder="Name, z.B. Fußball spielen" style="flex:1;min-width:140px">
-      <button id="newActivityAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
+      <input id="newItemName" style="flex:1;min-width:140px">
+      <button id="newItemAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
     </div>
     <label style="margin-top:8px">Icon</label>
-    <div id="newActivityIcons" class="icon-swatches" style="margin-top:4px"></div>
+    <div id="newItemIcons" class="icon-swatches" style="margin-top:4px"></div>
   </div>
-  <div class="btns"><button id="activitiesClose" class="primary">Fertig</button></div>
+  <div class="btns"><button id="catalogClose" class="primary">Fertig</button></div>
 </div></dialog>
 
-<dialog id="activityDialog"><div class="dlg">
-  <h3 id="actDlgName"></h3>
+<!-- Dialog für einen im Raster geplanten Eintrag (Aktivität oder Sonstiges) -->
+<dialog id="itemDialog"><div class="dlg">
+  <h3 id="itemDlgName"></h3>
   <label>Schicht</label>
-  <select id="actDlgShift">
+  <select id="itemDlgShift">
     <option value="frueh">Frühschicht</option>
     <option value="mittel">Mittelschicht</option>
     <option value="spaet">Spätschicht</option>
   </select>
   <label>Gruppe</label>
-  <select id="actDlgGroup"></select>
+  <select id="itemDlgGroup"></select>
   <div class="btns">
-    <button id="actDlgRemove" class="danger">Aus Plan nehmen</button>
-    <button id="actDlgCancel">Abbrechen</button>
-    <button id="actDlgOk" class="primary">Übernehmen</button>
+    <button id="itemDlgRemove" class="danger">Aus Plan nehmen</button>
+    <button id="itemDlgCancel">Abbrechen</button>
+    <button id="itemDlgOk" class="primary">Übernehmen</button>
   </div>
 </div></dialog>
 
@@ -341,8 +347,28 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 const Constants = {
   /** Feste Palette für Gruppenfarben. */
   GROUP_COLORS: ["#e8623c","#3f8f5b","#c9932b","#3d6fb3","#7a56b0","#0d8f9c","#5a6472"],
-  /** Auswahl an Icons für Aktivitäten. */
-  ACTIVITY_ICONS: ["⚽","🤸","💃","☕","🎨","🎵","📚","🍪","🌳","🚌","🎂","🧩","🎭","🏊","🧘","🔬","🎉","🚲","🧸","✂️","🥁","🏕️","🐛","🩺"],
+  /** Kategorien planbarer Einträge. Technisch verhalten sie sich identisch;
+      unterschiedlich sind nur Beschriftungen, Icon-Auswahl und die DOM-Ids. */
+  CATEGORIES: [
+    {
+      key:"activity", listKey:"activities",
+      label:"Aktivitäten", noun:"Aktivität", newLabel:"Neue Aktivität",
+      placeholder:"Name, z.B. Fußball spielen",
+      emptyNote:"Noch keine Aktivitäten angelegt.",
+      buttonId:"btnActivities", poolId:"activityPool",
+      icons:["⚽","🤸","💃","☕","🎨","🎵","📚","🍪","🌳","🚌","🎂","🧩","🎭","🏊","🧘","🔬","🎉","🚲","🧸","✂️","🥁","🏕️","🐛","🩺"],
+    },
+    {
+      key:"misc", listKey:"misc",
+      label:"Sonstiges", noun:"Eintrag", newLabel:"Neuer Eintrag",
+      placeholder:"Name, z.B. Weihnachtsfeier",
+      emptyNote:"Noch keine Einträge angelegt.",
+      buttonId:"btnMisc", poolId:"miscPool",
+      icons:["⭐","🌠","🎄","🎁","🕯️","⛄","❄️","🌸","🌻","🍂","🌈","🎃","🐰","🥚","🔔","📷","🎪","🗓️","📋","📢","🧹","🚑","⚠️","🏆"],
+    },
+  ],
+  /** Kategorie-Konfiguration zu einem Schlüssel (z.B. "activity"). */
+  category(key){ return Constants.CATEGORIES.find(c=>c.key===key); },
   SHIFTS: [["frueh","Frühschicht"],["mittel","Mittelschicht"],["spaet","Spätschicht"]],
   SHIFT_KEYS: ["frueh","mittel","spaet"],
   AWAY_LABEL: {krank:"krank",urlaub:"Urlaub",sonstiges:"Sonst."},
@@ -447,53 +473,67 @@ const Groups = {
   },
 };
 
-// ---------- Activities (rein) ----------
-// activities: [{name, icon}]  (icon = Emoji, z.B. "⚽")
-const Activities = {
-  all(activities){ return activities||[]; },
-  names(activities){ return Activities.all(activities).map(a=>a.name); },
-  find(activities,name){ return Activities.all(activities).find(a=>a.name===name); },
-  has(activities,name){ return !!Activities.find(activities,name); },
-  iconOf(activities,name){
-    const a=Activities.find(activities,name);
-    return (a && a.icon) || Constants.ACTIVITY_ICONS[0];
+// ---------- Catalog (rein) ----------
+// Katalog einer Kategorie: [{name, icon}]  (icon = Emoji, z.B. "⚽")
+// `cat` ist immer eine Kategorie aus Constants.CATEGORIES.
+const Catalog = {
+  /** Liste einer Kategorie aus dem State (Katalog) bzw. aus einem Tag (Planung).
+      Fehlt sie, wird sie leer angelegt – so bleiben alte Stände nutzbar. */
+  listOf(cat,holder){
+    if(!holder) return [];
+    if(!Array.isArray(holder[cat.listKey])) holder[cat.listKey]=[];
+    return holder[cat.listKey];
   },
-  usedIcons(activities){
-    return new Set(Activities.all(activities).map(a=>a.icon).filter(Boolean));
+  all(list){ return list||[]; },
+  names(list){ return Catalog.all(list).map(a=>a.name); },
+  find(list,name){ return Catalog.all(list).find(a=>a.name===name); },
+  has(list,name){ return !!Catalog.find(list,name); },
+  iconOf(cat,list,name){
+    const a=Catalog.find(list,name);
+    return (a && a.icon) || cat.icons[0];
+  },
+  usedIcons(list){
+    return new Set(Catalog.all(list).map(a=>a.icon).filter(Boolean));
   },
   /** Erstes Icon der Auswahl, das noch nicht vergeben ist; sonst erstes Icon. */
-  defaultIcon(activities){
-    const used=Activities.usedIcons(activities);
-    return Constants.ACTIVITY_ICONS.find(i=>!used.has(i)) || Constants.ACTIVITY_ICONS[0];
+  defaultIcon(cat,list){
+    const used=Catalog.usedIcons(list);
+    return cat.icons.find(i=>!used.has(i)) || cat.icons[0];
   },
-  isUsed(weeks,name){
+  isUsed(cat,weeks,name){
     return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
-      (d.activities||[]).some(p=>p.name===name)
+      Catalog.listOf(cat,d).some(p=>p.name===name)
     ));
   },
-  add(activities,name,icon){
-    activities.push({name, icon:icon || Activities.defaultIcon(activities)});
-    return activities;
+  add(cat,list,name,icon){
+    list.push({name, icon:icon || Catalog.defaultIcon(cat,list)});
+    return list;
   },
-  remove(activities,name){
-    const i=Activities.all(activities).findIndex(a=>a.name===name);
-    if(i>=0) activities.splice(i,1);
-    return activities;
+  remove(list,name){
+    const i=Catalog.all(list).findIndex(a=>a.name===name);
+    if(i>=0) list.splice(i,1);
+    return list;
   },
-  setIcon(activities,name,icon){
-    const a=Activities.find(activities,name);
+  setIcon(list,name,icon){
+    const a=Catalog.find(list,name);
     if(a) a.icon=icon;
-    return activities;
+    return list;
   },
 };
 
 // ---------- Week (rein) ----------
 const Week = {
+  /** Leerer Tag inkl. leerer Listen für alle Kategorien. */
+  blankDay(assign){
+    const day={mode:"Normalbetrieb",info:"",assign:assign||{},comments:{}};
+    Constants.CATEGORIES.forEach(cat=>{ day[cat.listKey]=[]; });
+    return day;
+  },
   blank(mondayISO){
     return {
       mondayISO,
       houseInfo:"",
-      days:Constants.DAYS.map(()=>({mode:"Normalbetrieb",info:"",assign:{},comments:{},activities:[]})),
+      days:Constants.DAYS.map(()=>Week.blankDay()),
     };
   },
   ensure(weeks,mondayISO){
@@ -523,32 +563,32 @@ const Week = {
   unassign(day,name){
     delete day.assign[name];
   },
-  /** Eingeplante Aktivitäten eines Tages: [{id,name,group,shift}] */
-  activityList(day){
-    if(!Array.isArray(day.activities)) day.activities=[];
-    return day.activities;
+  /** Eingeplante Einträge einer Kategorie an einem Tag: [{id,name,group,shift}] */
+  itemList(day,cat){
+    if(!Array.isArray(day[cat.listKey])) day[cat.listKey]=[];
+    return day[cat.listKey];
   },
-  nextActivityId(day){
-    const max=Week.activityList(day).reduce((m,p)=>Math.max(m, Number(p.id)||0), 0);
+  nextItemId(day,cat){
+    const max=Week.itemList(day,cat).reduce((m,p)=>Math.max(m, Number(p.id)||0), 0);
     return String(max+1);
   },
-  addActivity(day,{name,group,shift}){
-    const placement={id:Week.nextActivityId(day),name,group,shift};
-    Week.activityList(day).push(placement);
+  addItem(day,cat,{name,group,shift}){
+    const placement={id:Week.nextItemId(day,cat),name,group,shift};
+    Week.itemList(day,cat).push(placement);
     return placement;
   },
-  findActivity(day,id){
-    return Week.activityList(day).find(p=>p.id===id);
+  findItem(day,cat,id){
+    return Week.itemList(day,cat).find(p=>p.id===id);
   },
-  updateActivity(day,id,patch){
-    const p=Week.findActivity(day,id);
+  updateItem(day,cat,id,patch){
+    const p=Week.findItem(day,cat,id);
     if(!p) return null;
     if(patch.shift!==undefined) p.shift=patch.shift;
     if(patch.group!==undefined) p.group=patch.group;
     return p;
   },
-  removeActivity(day,id){
-    const list=Week.activityList(day);
+  removeItem(day,cat,id){
+    const list=Week.itemList(day,cat);
     const i=list.findIndex(p=>p.id===id);
     if(i>=0) list.splice(i,1);
   },
@@ -564,13 +604,7 @@ const Week = {
   reset(staff){
     return {
       houseInfo:"",
-      days:Constants.DAYS.map(()=>({
-        mode:"Normalbetrieb",
-        info:"",
-        assign:Week.defaultAssign(staff),
-        comments:{},
-        activities:[],
-      })),
+      days:Constants.DAYS.map(()=>Week.blankDay(Week.defaultAssign(staff))),
     };
   },
   copyFrom(prev,mondayISO){
@@ -601,25 +635,27 @@ const ViewModel = {
     };
   },
 
-  activityEntry(placement,activities){
+  itemEntry(cat,placement,list){
     return {
+      cat:cat.key,
       id:placement.id,
       name:placement.name,
-      icon:Activities.iconOf(activities,placement.name),
+      icon:Catalog.iconOf(cat,list,placement.name),
       group:placement.group,
       shift:placement.shift,
     };
   },
 
-  forDay(day,staff,groups,activities){
+  /** `catalogs` = Objekt mit den Katalog-Listen aller Kategorien (i.d.R. der State). */
+  forDay(day,staff,groups,catalogs){
     const assign=day.assign||{};
     const assigned=new Set(Object.keys(assign));
     const pool=Staff.active(staff).filter(s=>!assigned.has(s.name));
     const cells={};
-    const activityCells={};
+    const itemCells={};
     Groups.names(groups).forEach(g=>{
       cells[g]={frueh:[],mittel:[],spaet:[]};
-      activityCells[g]={frueh:[],mittel:[],spaet:[]};
+      itemCells[g]={frueh:[],mittel:[],spaet:[]};
     });
     Object.entries(assign).forEach(([name,a])=>{
       const entry=ViewModel.personEntry(name,a,staff,groups);
@@ -628,11 +664,14 @@ const ViewModel = {
       const bucket=row[a.shift]||row.frueh;
       bucket.push(entry);
     });
-    (day.activities||[]).forEach(p=>{
-      const row=activityCells[p.group];
-      if(!row) return;
-      const bucket=row[p.shift]||row.frueh;
-      bucket.push(ViewModel.activityEntry(p,activities));
+    Constants.CATEGORIES.forEach(cat=>{
+      const list=Catalog.listOf(cat,catalogs);
+      Catalog.listOf(cat,day).forEach(p=>{
+        const row=itemCells[p.group];
+        if(!row) return;
+        const bucket=row[p.shift]||row.frueh;
+        bucket.push(ViewModel.itemEntry(cat,p,list));
+      });
     });
     return {
       mode:day.mode,
@@ -640,7 +679,7 @@ const ViewModel = {
       comments:day.comments||{},
       pool,
       cells,
-      activityCells,
+      itemCells,
     };
   },
 };
@@ -650,15 +689,14 @@ const Store = (() => {
   // groups: [{name, color}]
   // staff: [{name,stamm,active}]
   // weekKey -> {mondayISO, days:[{mode,info,assign,comments}], houseInfo}
-  let state = { weekStartISO:null, weeks:{}, groups:[], staff:[], activities:[] };
+  let state = { weekStartISO:null, weeks:{}, groups:[], staff:[], activities:[], misc:[] };
   let curWeekKey = null;
   let curDay = 0;
   // Ephemeral UI (kein Re-Render)
   let dragToken = null;
   let dlgName = null;
   let dlgDay = null;
-  let actDlgId = null;
-  let actDlgDay = null;
+  let itemDlg = { cat:null, id:null, day:null };
 
   const listeners = new Set();
   let txDepth = 0;
@@ -732,22 +770,25 @@ const Store = (() => {
     getDragToken(){ return dragToken; },
     setChipDialog(name, day){ dlgName = name; dlgDay = day; },
     chipDialog(){ return { name:dlgName, day:dlgDay }; },
-    setActivityDialog(id, day){ actDlgId = id; actDlgDay = day; },
-    activityDialog(){ return { id:actDlgId, day:actDlgDay }; },
+    setItemDialog(cat, id, day){ itemDlg = { cat, id, day }; },
+    itemDialog(){ return itemDlg; },
   };
 })();
 
 // ---------- Drag (rein: Transfer-Token) ----------
-// "staff:<Name>" = Person · "activity:<Name>" = neue Aktivität · "placement:<Id>" = bereits geplante Aktivität
+// "staff:<Name>"            = Person
+// "item:<Kat>:<Name>"       = neuer Eintrag aus dem Pool einer Kategorie
+// "placement:<Kat>:<Id>"    = bereits geplanter Eintrag einer Kategorie
 const Drag = {
   staff(name){ return "staff:"+name; },
-  activity(name){ return "activity:"+name; },
-  placement(id){ return "placement:"+id; },
+  item(catKey,name){ return "item:"+catKey+":"+name; },
+  placement(catKey,id){ return "placement:"+catKey+":"+id; },
   parse(token){
-    const t=String(token||"");
-    const i=t.indexOf(":");
-    if(i<0) return {kind:"staff", value:t};
-    return {kind:t.slice(0,i), value:t.slice(i+1)};
+    const parts=String(token||"").split(":");
+    if(parts.length<2) return {kind:"staff", value:parts[0]||""};
+    const kind=parts[0];
+    if(kind==="staff") return {kind, value:parts.slice(1).join(":")};
+    return {kind, cat:Constants.category(parts[1]), value:parts.slice(2).join(":")};
   },
 };
 
@@ -755,10 +796,6 @@ const Drag = {
 const View = {
   groupColor(name){
     return Groups.colorOf(Store.get().groups, name);
-  },
-
-  activityIcon(name){
-    return Activities.iconOf(Store.get().activities, name);
   },
 
   flash(msg){
@@ -770,7 +807,7 @@ const View = {
 
   dayViewModel(day){
     const s=Store.get();
-    return ViewModel.forDay(day, s.staff, s.groups, s.activities);
+    return ViewModel.forDay(day, s.staff, s.groups, s);
   },
 
   render(){
@@ -800,7 +837,7 @@ const View = {
     const vm=View.dayViewModel(day);
     View.renderGrid(day,vm,s.groups);
     View.renderPool(day,vm);
-    View.renderActivityPool(s.activities);
+    View.renderItemPools(s);
     View.renderLegend(s.groups);
   },
 
@@ -824,8 +861,8 @@ const View = {
         (vm.cells[g][sk]||[]).forEach(entry=>{
           cell.appendChild(View.makeChip(entry));
         });
-        (vm.activityCells[g][sk]||[]).forEach(entry=>{
-          cell.appendChild(View.makeActivityChip(entry));
+        (vm.itemCells[g][sk]||[]).forEach(entry=>{
+          cell.appendChild(View.makeItemChip(entry));
         });
         grid.appendChild(cell);
       });
@@ -853,22 +890,23 @@ const View = {
     return c;
   },
 
-  /** Chip einer Aktivität – im Raster (mit Platzierungs-Id) oder im Pool (ohne). */
-  makeActivityChip(entry){
+  /** Chip eines Katalog-Eintrags – im Raster (mit Platzierungs-Id) oder im Pool (ohne). */
+  makeItemChip(entry){
     const c=document.createElement("div");
-    c.className="chip activity";
+    c.className="chip item";
     c.draggable=true;
-    c.dataset.activity=entry.name;
+    c.dataset.cat=entry.cat;
+    c.dataset.item=entry.name;
     const ico=document.createElement("span");
     ico.className="ico"; ico.textContent=entry.icon;
     c.appendChild(ico);
     c.appendChild(document.createTextNode(entry.name));
     if(entry.id){
       c.dataset.placement=entry.id;
-      c.ondragstart=e=>{const t=Drag.placement(entry.id);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
-      c.onclick=()=>ActivityDialog.open(entry.id);
+      c.ondragstart=e=>{const t=Drag.placement(entry.cat,entry.id);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
+      c.onclick=()=>ItemDialog.open(Constants.category(entry.cat),entry.id);
     }else{
-      c.ondragstart=e=>{const t=Drag.activity(entry.name);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
+      c.ondragstart=e=>{const t=Drag.item(entry.cat,entry.name);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
     }
     return c;
   },
@@ -887,13 +925,18 @@ const View = {
     View.wirePoolDrop();
   },
 
-  renderActivityPool(activities){
-    const box=document.getElementById("activityPool"); box.innerHTML="";
-    Activities.all(activities).forEach(a=>{
-      box.appendChild(View.makeActivityChip({name:a.name, icon:Activities.iconOf(activities,a.name)}));
+  renderItemPools(catalogs){
+    Constants.CATEGORIES.forEach(cat=>{
+      const box=document.getElementById(cat.poolId); box.innerHTML="";
+      const list=Catalog.listOf(cat,catalogs);
+      Catalog.all(list).forEach(a=>{
+        box.appendChild(View.makeItemChip({
+          cat:cat.key, name:a.name, icon:Catalog.iconOf(cat,list,a.name),
+        }));
+      });
+      if(!box.children.length)
+        box.innerHTML='<div class="poolnote">'+cat.emptyNote+'</div>';
     });
-    if(!box.children.length)
-      box.innerHTML='<div class="poolnote">Noch keine Aktivitäten angelegt.</div>';
   },
 
   wireDrop(cell){
@@ -903,12 +946,13 @@ const View = {
       e.preventDefault();cell.classList.remove("dragover");
       const token=e.dataTransfer.getData("text/plain")||Store.getDragToken();
       if(!token)return;
-      const {kind,value}=Drag.parse(token);
+      const {kind,cat,value}=Drag.parse(token);
+      if((kind==="item"||kind==="placement") && !cat) return;
       const target={shift:cell.dataset.shift, group:cell.dataset.group};
       Store.mutate(s=>{
         const day=Store.currentDay();
-        if(kind==="activity") Week.addActivity(day, {name:value, ...target});
-        else if(kind==="placement") Week.updateActivity(day, value, target);
+        if(kind==="item") Week.addItem(day, cat, {name:value, ...target});
+        else if(kind==="placement") Week.updateItem(day, cat, value, target);
         else Week.assign(day, value, target, s.staff, s.groups);
       });
     };
@@ -922,11 +966,12 @@ const View = {
       e.preventDefault();aside.classList.remove("dragover");
       const token=e.dataTransfer.getData("text/plain")||Store.getDragToken();
       if(!token) return;
-      const {kind,value}=Drag.parse(token);
-      if(kind==="activity") return; // Aktivität aus dem Pool zurück in den Pool: nichts zu tun
+      const {kind,cat,value}=Drag.parse(token);
+      if(kind==="item") return; // Eintrag aus dem Pool zurück in den Pool: nichts zu tun
+      if(kind==="placement" && !cat) return;
       Store.mutate(()=>{
         const day=Store.currentDay();
-        if(kind==="placement") Week.removeActivity(day, value);
+        if(kind==="placement") Week.removeItem(day, cat, value);
         else Week.unassign(day, value);
       });
     };
@@ -988,43 +1033,46 @@ const ChipDialog = {
   },
 };
 
-// ---------- ActivityDialog (geplante Aktivität im Raster) ----------
-const ActivityDialog = {
-  open(id){
+// ---------- ItemDialog (geplanter Katalog-Eintrag im Raster) ----------
+const ItemDialog = {
+  open(cat,id){
+    if(!cat) return;
     const day=Store.currentDay();
-    const p=Week.findActivity(day,id);
+    const p=Week.findItem(day,cat,id);
     if(!p) return;
-    Store.setActivityDialog(id, day);
+    Store.setItemDialog(cat, id, day);
     const s=Store.get();
-    document.getElementById("actDlgName").textContent=
-      Activities.iconOf(s.activities,p.name)+"  "+p.name;
-    document.getElementById("actDlgShift").value=p.shift;
-    const gsel=document.getElementById("actDlgGroup"); gsel.innerHTML="";
+    const dlg=document.getElementById("itemDialog");
+    dlg.dataset.cat=cat.key;
+    document.getElementById("itemDlgName").textContent=
+      Catalog.iconOf(cat,Catalog.listOf(cat,s),p.name)+"  "+p.name;
+    document.getElementById("itemDlgShift").value=p.shift;
+    const gsel=document.getElementById("itemDlgGroup"); gsel.innerHTML="";
     Groups.names(s.groups).forEach(g=>{
       const o=document.createElement("option");
       o.value=g; o.textContent=g;
       gsel.appendChild(o);
     });
     gsel.value=p.group;
-    document.getElementById("activityDialog").showModal();
+    dlg.showModal();
   },
 
   wire(){
-    document.getElementById("actDlgOk").onclick=()=>{
-      const { id, day } = Store.activityDialog();
+    document.getElementById("itemDlgOk").onclick=()=>{
+      const { cat, id, day } = Store.itemDialog();
       Store.mutate(()=>{
-        Week.updateActivity(day, id, {
-          shift:document.getElementById("actDlgShift").value,
-          group:document.getElementById("actDlgGroup").value,
+        Week.updateItem(day, cat, id, {
+          shift:document.getElementById("itemDlgShift").value,
+          group:document.getElementById("itemDlgGroup").value,
         });
       });
-      document.getElementById("activityDialog").close();
+      document.getElementById("itemDialog").close();
     };
-    document.getElementById("actDlgCancel").onclick=()=>document.getElementById("activityDialog").close();
-    document.getElementById("actDlgRemove").onclick=()=>{
-      const { id, day } = Store.activityDialog();
-      Store.mutate(()=>{ Week.removeActivity(day, id); });
-      document.getElementById("activityDialog").close();
+    document.getElementById("itemDlgCancel").onclick=()=>document.getElementById("itemDialog").close();
+    document.getElementById("itemDlgRemove").onclick=()=>{
+      const { cat, id, day } = Store.itemDialog();
+      Store.mutate(()=>{ Week.removeItem(day, cat, id); });
+      document.getElementById("itemDialog").close();
     };
   },
 };
@@ -1217,24 +1265,38 @@ const GroupsDialog = {
   },
 };
 
-// ---------- ActivitiesDialog ----------
-const ActivitiesDialog = {
+// ---------- CatalogDialog (Katalog einer Kategorie verwalten) ----------
+const CatalogDialog = {
+  cat: null,
   newIcon: null,
 
-  open(){
-    ActivitiesDialog.renderList();
-    ActivitiesDialog.resetNewIcon();
-    document.getElementById("activitiesDialog").showModal();
+  open(cat){
+    CatalogDialog.cat=cat;
+    const dlg=document.getElementById("catalogDialog");
+    dlg.dataset.cat=cat.key;
+    document.getElementById("catalogTitle").textContent=cat.label+" verwalten";
+    document.getElementById("catalogNewLabel").textContent=cat.newLabel;
+    const input=document.getElementById("newItemName");
+    input.placeholder=cat.placeholder;
+    input.value="";
+    CatalogDialog.renderList();
+    CatalogDialog.resetNewIcon();
+    dlg.showModal();
+  },
+
+  /** Katalog-Liste der aktuell geöffneten Kategorie. */
+  list(){
+    return Catalog.listOf(CatalogDialog.cat, Store.get());
   },
 
   resetNewIcon(){
-    ActivitiesDialog.newIcon=Activities.defaultIcon(Store.get().activities);
-    ActivitiesDialog.renderNewIcons();
+    CatalogDialog.newIcon=Catalog.defaultIcon(CatalogDialog.cat, CatalogDialog.list());
+    CatalogDialog.renderNewIcons();
   },
 
   renderIcons(container, selected, onPick){
     container.innerHTML="";
-    Constants.ACTIVITY_ICONS.forEach(icon=>{
+    CatalogDialog.cat.icons.forEach(icon=>{
       const b=document.createElement("button");
       b.type="button";
       b.className="icon-swatch"+(icon===selected?" selected":"");
@@ -1248,25 +1310,27 @@ const ActivitiesDialog = {
   },
 
   renderNewIcons(){
-    ActivitiesDialog.renderIcons(
-      document.getElementById("newActivityIcons"),
-      ActivitiesDialog.newIcon,
-      icon=>{ ActivitiesDialog.newIcon=icon; ActivitiesDialog.renderNewIcons(); }
+    CatalogDialog.renderIcons(
+      document.getElementById("newItemIcons"),
+      CatalogDialog.newIcon,
+      icon=>{ CatalogDialog.newIcon=icon; CatalogDialog.renderNewIcons(); }
     );
   },
 
   renderList(){
     const s=Store.get();
-    const box=document.getElementById("activitiesList");
+    const cat=CatalogDialog.cat;
+    const list=CatalogDialog.list();
+    const box=document.getElementById("catalogList");
     box.innerHTML="";
-    Activities.all(s.activities).forEach(a=>{
+    Catalog.all(list).forEach(a=>{
       const name=a.name;
       const row=document.createElement("div");
       row.className="staffrow actrow";
-      row.dataset.activity=name;
+      row.dataset.item=name;
       const ico=document.createElement("span");
       ico.className="ico";
-      ico.textContent=Activities.iconOf(s.activities,name);
+      ico.textContent=Catalog.iconOf(cat,list,name);
       row.appendChild(ico);
       const nm=document.createElement("span");
       nm.className="nm";
@@ -1277,44 +1341,47 @@ const ActivitiesDialog = {
       del.textContent="Löschen";
       del.title="Endgültig entfernen (nur möglich, wenn nirgends eingeplant)";
       del.onclick=()=>{
-        if(Activities.isUsed(s.weeks,name)){
+        if(Catalog.isUsed(cat,s.weeks,name)){
           alert(name+" ist in mindestens einer Woche eingeplant und kann nicht gelöscht werden.");
           return;
         }
         if(!confirm(name+" endgültig löschen?"))return;
-        Store.mutateQuiet(st=>{ Activities.remove(st.activities,name); });
-        ActivitiesDialog.renderList();
-        ActivitiesDialog.resetNewIcon();
+        Store.mutateQuiet(()=>{ Catalog.remove(CatalogDialog.list(),name); });
+        CatalogDialog.renderList();
+        CatalogDialog.resetNewIcon();
       };
       row.appendChild(del);
       const icons=document.createElement("div");
       icons.className="icon-swatches";
-      ActivitiesDialog.renderIcons(icons, Activities.iconOf(s.activities,name), icon=>{
-        Store.mutateQuiet(st=>{ Activities.setIcon(st.activities,name,icon); });
-        ActivitiesDialog.renderList();
-        ActivitiesDialog.resetNewIcon();
+      CatalogDialog.renderIcons(icons, Catalog.iconOf(cat,list,name), icon=>{
+        Store.mutateQuiet(()=>{ Catalog.setIcon(CatalogDialog.list(),name,icon); });
+        CatalogDialog.renderList();
+        CatalogDialog.resetNewIcon();
       });
       row.appendChild(icons);
       box.appendChild(row);
     });
-    if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">Noch keine Aktivitäten angelegt.</div>';
+    if(!box.children.length)box.innerHTML='<div style="color:var(--muted);font-size:12px">'+cat.emptyNote+'</div>';
   },
 
   wire(){
-    document.getElementById("btnActivities").onclick=ActivitiesDialog.open;
-    document.getElementById("activitiesClose").onclick=()=>{
-      document.getElementById("activitiesDialog").close();
+    Constants.CATEGORIES.forEach(cat=>{
+      document.getElementById(cat.buttonId).onclick=()=>CatalogDialog.open(cat);
+    });
+    document.getElementById("catalogClose").onclick=()=>{
+      document.getElementById("catalogDialog").close();
       Store.notify();
     };
-    document.getElementById("newActivityAdd").onclick=()=>{
-      const name=document.getElementById("newActivityName").value.trim();
+    document.getElementById("newItemAdd").onclick=()=>{
+      const cat=CatalogDialog.cat;
+      const name=document.getElementById("newItemName").value.trim();
       if(!name){alert("Bitte einen Namen eingeben.");return;}
-      if(Activities.has(Store.get().activities,name)){alert("Es gibt bereits eine Aktivität mit diesem Namen.");return;}
-      const icon=ActivitiesDialog.newIcon || Activities.defaultIcon(Store.get().activities);
-      Store.mutateQuiet(st=>{ Activities.add(st.activities,name,icon); });
-      document.getElementById("newActivityName").value="";
-      ActivitiesDialog.renderList();
-      ActivitiesDialog.resetNewIcon();
+      if(Catalog.has(CatalogDialog.list(),name)){alert(cat.noun+" „"+name+"“ gibt es bereits.");return;}
+      const icon=CatalogDialog.newIcon || Catalog.defaultIcon(cat, CatalogDialog.list());
+      Store.mutateQuiet(()=>{ Catalog.add(cat, CatalogDialog.list(), name, icon); });
+      document.getElementById("newItemName").value="";
+      CatalogDialog.renderList();
+      CatalogDialog.resetNewIcon();
       View.flash(name+" hinzugefügt");
     };
   },
@@ -1327,9 +1394,12 @@ const Persistence = {
     if(!raw.weeks) raw.weeks={};
     if(!Array.isArray(raw.groups)) raw.groups=[];
     if(!Array.isArray(raw.staff)) raw.staff=[];
-    if(!Array.isArray(raw.activities)) raw.activities=[];
-    Object.values(raw.weeks).forEach(wk=>{
-      (wk.days||[]).forEach(d=>{ if(!Array.isArray(d.activities)) d.activities=[]; });
+    // Kataloge und Tagesplanungen aller Kategorien anlegen (ältere Stände kennen nur "activities")
+    Constants.CATEGORIES.forEach(cat=>{
+      Catalog.listOf(cat,raw);
+      Object.values(raw.weeks).forEach(wk=>{
+        (wk.days||[]).forEach(d=>{ Catalog.listOf(cat,d); });
+      });
     });
     return raw;
   },
@@ -1419,14 +1489,14 @@ const Print = {
     return '<span class="'+cls+'">'+inner+'</span>';
   },
 
-  activityHtml(entry){
-    return '<span class="pr-act">'+Print.esc(entry.icon)+' '+Print.esc(entry.name)+'</span>';
+  itemHtml(entry){
+    return '<span class="pr-item">'+Print.esc(entry.icon)+' '+Print.esc(entry.name)+'</span>';
   },
 
-  buildDay(wk,di,staff,groups,activities){
+  buildDay(wk,di,staff,groups,catalogs){
     const mon=Dates.toDate(wk.mondayISO);
     const day=wk.days[di];
-    const vm=ViewModel.forDay(day,staff,groups,activities);
+    const vm=ViewModel.forDay(day,staff,groups,catalogs);
     const closed=vm.mode==="Schließung";
     let html='<div class="pr-day">';
     html+='<div class="pr-dayhead">'
@@ -1442,11 +1512,11 @@ const Print = {
 
     Groups.names(groups).forEach(g=>{
       const byShift=vm.cells[g]||{frueh:[],mittel:[],spaet:[]};
-      const actByShift=vm.activityCells[g]||{frueh:[],mittel:[],spaet:[]};
+      const itemsByShift=vm.itemCells[g]||{frueh:[],mittel:[],spaet:[]};
       const col=View.groupColor(g);
       const cell=sk=>{
         const parts=(byShift[sk]||[]).map(Print.personHtml)
-          .concat((actByShift[sk]||[]).map(Print.activityHtml));
+          .concat((itemsByShift[sk]||[]).map(Print.itemHtml));
         return parts.length?parts.join(", "):'<span class="empty">–</span>';
       };
       html+='<tr>'
@@ -1466,14 +1536,14 @@ const Print = {
     return html;
   },
 
-  buildWeek(wk,staff,groups,activities){
+  buildWeek(wk,staff,groups,catalogs){
     const mon=Dates.toDate(wk.mondayISO);
     let html='<section class="pr-week">';
     html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
         +'<span class="sub">Woche '+Dates.fmtDE(mon)+' – '+Dates.fmtDE(Dates.addDays(mon,4))+'</span></div>';
     if(wk.houseInfo && wk.houseInfo.trim())
       html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+Print.esc(wk.houseInfo)+'</div>';
-    Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups,activities); });
+    Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups,catalogs); });
     html+='<div class="pr-legend">';
     Groups.names(groups).forEach(g=>{
       html+='<span><span class="sw" style="background:'+View.groupColor(g)+'"></span>'+Print.esc(g)+'</span>';
@@ -1486,11 +1556,12 @@ const Print = {
 
   doPrint(scope){
     const root=document.getElementById("printRoot");
-    const {staff,groups,weeks,activities}=Store.get();
+    const s=Store.get();
+    const {staff,groups,weeks}=s;
     let keys;
     if(scope==="all") keys=Object.keys(weeks).sort();
     else keys=[Store.weekKey()];
-    root.innerHTML=keys.map(k=>Print.buildWeek(weeks[k],staff,groups,activities)).join("");
+    root.innerHTML=keys.map(k=>Print.buildWeek(weeks[k],staff,groups,s)).join("");
     setTimeout(()=>{ window.print(); }, 60);
   },
 
@@ -1561,10 +1632,10 @@ const App = {
     };
 
     ChipDialog.wire();
-    ActivityDialog.wire();
+    ItemDialog.wire();
     StaffDialog.wire();
     GroupsDialog.wire();
-    ActivitiesDialog.wire();
+    CatalogDialog.wire();
     Persistence.wire();
     Print.wire();
   },
