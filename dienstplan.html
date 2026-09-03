@@ -19,6 +19,7 @@ body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);c
 /* ---- shell / toolbar ---- */
 header{background:var(--hdr);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:30}
 header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
+.app-version{font-size:10px;font-weight:400;opacity:.6;letter-spacing:0}
 .weeknav{display:flex;align-items:center;gap:8px;margin-left:auto}
 .weeknav button,.toolbar button{cursor:pointer;border:1px solid var(--line-strong);background:#fff;color:var(--ink);border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit}
 .weeknav button:hover,.toolbar button:hover{background:#f0f3f7}
@@ -178,7 +179,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 </head>
 <body>
 <header>
-  <h1>🐣 Dienstplan Spatzennest</h1>
+  <h1>🐣 Dienstplan Spatzennest <span class="app-version" id="appVersion"></span></h1>
   <div class="weeknav">
     <button id="prevWeek">‹ Woche</button>
     <span class="weeklabel" id="weekLabel"></span>
@@ -348,6 +349,11 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
    ========================================================================== */
 
 // ---------- Constants ----------
+// Kurzer Commit-Hash, rein informativ zur Anzeige im Header (siehe App.init).
+// Wird von Hand gepflegt - es gibt keinen Build-Schritt, der ihn automatisch
+// einsetzt.
+const APP_VERSION = "PLACEHOLDER";
+
 const Constants = {
   /** Feste Palette für Gruppenfarben. */
   GROUP_COLORS: ["#e8623c","#3f8f5b","#c9932b","#3d6fb3","#7a56b0","#0d8f9c","#5a6472"],
@@ -1692,6 +1698,7 @@ const App = {
   },
 
   init(){
+    document.getElementById("appVersion").textContent = APP_VERSION;
     App.wire();
     const persisted = Persistence.read();
     if(persisted){ Persistence.apply(persisted); return; }
