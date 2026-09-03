@@ -1696,6 +1696,14 @@ const App = {
 };
 
 App.init();
+
+// Nur relevant, wenn per http(s) (z.B. GitHub Pages) aufgerufen - bei lokal
+// geöffneter Datei (file://) ist navigator.serviceWorker nicht verfügbar.
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
