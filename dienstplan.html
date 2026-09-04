@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Testaenderung 2026-09-03 #6: rein informativ, zum Testen des Update-Banners -->
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -44,9 +43,6 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
 .saved-flash{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
 .saved-flash.show{opacity:1}
-.update-banner{position:fixed;top:0;left:0;right:0;background:var(--hdr);color:#fff;padding:8px 16px;font-size:13px;display:flex;gap:12px;align-items:center;justify-content:center;z-index:60}
-.update-banner button{cursor:pointer;border:1px solid #fff;background:transparent;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit}
-.update-banner button:hover{background:rgba(255,255,255,.15)}
 
 /* ---- pool ---- */
 .pool{width:210px;flex:0 0 210px;background:var(--panel);border-right:1px solid var(--line);padding:10px;position:sticky;top:92px;max-height:calc(100vh - 92px);overflow-y:auto}
@@ -118,7 +114,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   @page{size:A4 landscape;margin:8mm}
   html,body{background:#fff!important;margin:0;padding:0}
   /* Gesamte interaktive App verstecken */
-  body>header,body>.toolbar,body>.layout,body>dialog,body>.saved-flash,body>.update-banner{display:none!important}
+  body>header,body>.toolbar,body>.layout,body>dialog,body>.saved-flash{display:none!important}
   #printRoot{display:block!important}
 
   .pr-week{page-break-after:always}
@@ -352,7 +348,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
 // Kurzer Commit-Hash, rein informativ zur Anzeige im Header (siehe App.init).
 // Wird von Hand gepflegt - es gibt keinen Build-Schritt, der ihn automatisch
 // einsetzt.
-const APP_VERSION = "6ed1818";
+const APP_VERSION = "PLACEHOLDER";
 
 const Constants = {
   /** Feste Palette für Gruppenfarben. */
@@ -1710,44 +1706,11 @@ App.init();
 
 // Nur relevant, wenn per http(s) (z.B. GitHub Pages) aufgerufen - bei lokal
 // geöffneter Datei (file://) ist navigator.serviceWorker nicht verfügbar.
-// Solange niemand auf "Jetzt aktualisieren" klickt, bleibt die zuletzt
-// gecachte Version aktiv (siehe sw.js: cache-first).
-const UpdateNotice = {
-  async check(){
-    try{
-      const cached = await caches.match("dienstplan.html");
-      console.log("[UpdateNotice] cached vorhanden:", !!cached);
-      if(!cached) return;
-      const fresh = await fetch("dienstplan.html?check="+Date.now(),{cache:"no-store"});
-      console.log("[UpdateNotice] fresh fetch:", fresh.status, fresh.ok);
-      if(!fresh.ok) return;
-      const [cachedText, freshText] = await Promise.all([cached.text(), fresh.text()]);
-      console.log("[UpdateNotice] Laenge cached/fresh:", cachedText.length, freshText.length, "identisch:", cachedText===freshText);
-      if(cachedText !== freshText) UpdateNotice.show();
-    }catch(e){ console.warn("[UpdateNotice] Fehler:", e); }
-  },
-  show(){
-    if(document.getElementById("updateBanner")) return;
-    const bar=document.createElement("div");
-    bar.id="updateBanner";
-    bar.className="update-banner";
-    bar.innerHTML='<span>Eine neue Version ist verfügbar.</span><button type="button" id="updateBtn">Jetzt aktualisieren</button>';
-    document.body.appendChild(bar);
-    document.getElementById("updateBtn").onclick=()=>{
-      navigator.serviceWorker.controller?.postMessage("applyUpdate");
-    };
-  },
-};
-
+// sw.js laedt online immer die aktuelle Version nach (network-first) und
+// faellt nur offline auf die zuletzt gecachte Version zurueck.
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("sw.js").then((reg)=>{
-      console.log("[SW] registriert, controller:", !!navigator.serviceWorker.controller, "active:", reg.active?.state);
-      UpdateNotice.check();
-    }).catch((e)=>console.warn("[SW] Registrierung fehlgeschlagen:", e));
-  });
-  navigator.serviceWorker.addEventListener("message",e=>{
-    if(e.data==="updateApplied") window.location.reload();
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
   });
 }
 </script>
