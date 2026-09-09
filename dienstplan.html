@@ -412,6 +412,15 @@ const Dates = {
     x.setDate(x.getDate()+n);
     return x;
   },
+  /** ISO-8601-Kalenderwoche (Wochen beginnen Montag, KW1 enthält den ersten Donnerstag). */
+  isoWeek(d){
+    const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+    const dow=(x.getUTCDay()+6)%7;
+    x.setUTCDate(x.getUTCDate()-dow+3);
+    const firstThursday=new Date(Date.UTC(x.getUTCFullYear(),0,4));
+    const diff=x-firstThursday;
+    return 1+Math.round(diff/(7*24*60*60*1000));
+  },
 };
 
 // ---------- Staff (rein: arbeitet auf übergebenen Daten) ----------
@@ -843,7 +852,7 @@ const View = {
 
     const mon=Dates.toDate(wk.mondayISO);
     document.getElementById("weekLabel").textContent =
-      Dates.fmtDE(mon)+" – "+Dates.fmtDE(Dates.addDays(mon,4));
+      "KW "+Dates.isoWeek(mon)+" · "+Dates.fmtDE(mon)+" – "+Dates.fmtDE(Dates.addDays(mon,4));
 
     const tabs=document.getElementById("dayTabs"); tabs.innerHTML="";
     Constants.DAYS.forEach((dn,i)=>{
@@ -1593,7 +1602,7 @@ const Print = {
     const mon=Dates.toDate(wk.mondayISO);
     let html='<section class="pr-week">';
     html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
-        +'<span class="sub">Woche '+Dates.fmtDE(mon)+' – '+Dates.fmtDE(Dates.addDays(mon,4))+'</span></div>';
+        +'<span class="sub">KW '+Dates.isoWeek(mon)+' · '+Dates.fmtDE(mon)+' – '+Dates.fmtDE(Dates.addDays(mon,4))+'</span></div>';
     if(wk.houseInfo && wk.houseInfo.trim())
       html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+Print.esc(wk.houseInfo)+'</div>';
     Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups,catalogs); });

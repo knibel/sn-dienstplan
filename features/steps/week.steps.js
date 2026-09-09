@@ -5,9 +5,12 @@ Then(
   "die Wochenbeschriftung zeigt einen Datumsbereich von Montag bis Freitag",
   async function () {
     const label = await this.page.locator("#weekLabel").innerText();
-    assert.match(label, /^\d{2}\.\d{2}\.\d{4}\s+–\s+\d{2}\.\d{2}\.\d{4}$/);
+    assert.match(
+      label,
+      /^KW\s+\d{1,2}\s+·\s+\d{2}\.\d{2}\.\d{4}\s+–\s+\d{2}\.\d{2}\.\d{4}$/
+    );
 
-    const [from, to] = label.split("–").map((s) => s.trim());
+    const [from, to] = label.split("·")[1].split("–").map((s) => s.trim());
     const parse = (s) => {
       const [d, m, y] = s.split(".").map(Number);
       return new Date(y, m - 1, d);
