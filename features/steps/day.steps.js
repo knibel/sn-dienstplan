@@ -67,6 +67,18 @@ When(
 );
 
 Then(
+  "enthält der Kommentar der Gruppe {string} nicht {string}",
+  async function (group, comment) {
+    const rowLabel = groupLabel(this.page, group);
+    const commentBox = rowLabel.locator(
+      "xpath=following-sibling::div[contains(@class,'commentcol')][1]//textarea"
+    );
+    const value = await commentBox.inputValue();
+    assert.ok(!value.includes(comment), `Kommentar sollte nicht "${comment}" enthalten, war "${value}"`);
+  }
+);
+
+Then(
   "enthält der Kommentar der Gruppe {string} {string}",
   async function (group, comment) {
     const rowLabel = groupLabel(this.page, group);

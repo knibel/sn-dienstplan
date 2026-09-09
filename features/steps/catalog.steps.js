@@ -33,6 +33,145 @@ function plannedChip(world, cat, name, group, shiftLabel) {
     .locator(`.chip.item[data-cat="${cat}"][data-item="${name}"]`);
 }
 
+// --- Notizflächen an Info Kita / Info Tag / Kommentar ---
+const INFO_ZONE = { "Info Kita": "#houseInfoItems", "Info Tag": "#dayInfoItems" };
+const INFO_TEXT = { "Info Kita": "#houseInfo", "Info Tag": "#dayInfo" };
+
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function infoZone(page, label) {
+  const sel = INFO_ZONE[label];
+  assert.ok(sel, `Unbekannte Notizfläche: ${label}`);
+  return page.locator(sel);
+}
+
+function commentZone(page, group) {
+  return page
+    .locator(".g-label")
+    .filter({ hasText: new RegExp(`^${escapeRegExp(group)}$`) })
+    .locator(
+      "xpath=following-sibling::div[contains(@class,'commentcol')][1]//div[contains(@class,'notezone')]"
+    );
+}
+
+function noteChip(zone, cat, name) {
+  return zone.locator(`.chip.item[data-cat="${cat}"][data-item="${name}"]`);
+}
+
+// Ziel zuerst in den sichtbaren Bereich holen: scrollt die Seite erst während
+// des Ziehens, landet der Drop sonst an der falschen Stelle. Der Pool bleibt
+// dank sticky-Position immer sichtbar.
+async function dragToTarget(source, target) {
+  await target.scrollIntoViewIfNeeded();
+  await source.dragTo(target);
+}
+
+async function dragIntoZone(world, noun, name, target, zone) {
+  const cat = catOfNoun(noun);
+  await dragToTarget(poolChip(world.page, cat, name), target);
+  await noteChip(zone, cat, name).first().waitFor({ state: "visible" });
+}
+
+async function dragOutOfZone(world, noun, name, zone) {
+  const cat = catOfNoun(noun);
+  const chip = noteChip(zone, cat, name).first();
+  await chip.scrollIntoViewIfNeeded();
+  await chip.dragTo(world.page.locator("#poolAside"));
+  await noteChip(zone, cat, name).first().waitFor({ state: "detached" });
+}
+
+When(
+  /^ich (?:die|den) (Aktivität|Eintrag) "([^"]*)" in die Notizfläche "([^"]*)" ziehe$/,
+  async function (noun, name, label) {
+    const zone = infoZone(this.page, label);
+    await dragIntoZone(this, noun, name, zone, zone);
+  }
+);
+
+When(
+  /^ich (?:die|den) (Aktivität|Eintrag) "([^"]*)" in die Notizfläche der Gruppe "([^"]*)" ziehe$/,
+  async function (noun, name, group) {
+    const zone = commentZone(this.page, group);
+    await dragIntoZone(this, noun, name, zone, zone);
+  }
+);
+
+// Versehentliches Ziehen ins Freitextfeld: der Eintrag soll trotzdem in der
+// Notizfläche landen und nicht als Text im Feld.
+When(
+  /^ich (?:die|den) (Aktivität|Eintrag) "([^"]*)" auf das Freitextfeld "([^"]*)" ziehe$/,
+  async function (noun, name, label) {
+    const sel = INFO_TEXT[label];
+    assert.ok(sel, `Unbekanntes Freitextfeld: ${label}`);
+    await dragIntoZone(this, noun, name, this.page.locator(sel), infoZone(this.page, label));
+  }
+);
+
+When(
+  /^ich (?:die|den) (Aktivität|Eintrag) "([^"]*)" auf das Kommentarfeld der Gruppe "([^"]*)" ziehe$/,
+  async function (noun, name, group) {
+    const textarea = this.page
+      .locator(".g-label")
+      .filter({ hasText: new RegExp(`^${escapeRegExp(group)}$`) })
+      .locator("xpath=following-sibling::div[contains(@class,'commentcol')][1]//textarea");
+    await dragIntoZone(this, noun, name, textarea, commentZone(this.page, group));
+  }
+);
+
+When(
+  /^ich (?:die|den) (Aktivität|Eintrag) "([^"]*)" aus der Notizfläche "([^"]*)" entferne$/,
+  async function (noun, name, label) {
+    await dragOutOfZone(this, noun, name, infoZone(this.page, label));
+  }
+);
+
+When(
+  /^ich (?:die|den) (Aktivität|Eintrag) "([^"]*)" aus der Notizfläche der Gruppe "([^"]*)" entferne$/,
+  async function (noun, name, group) {
+    await dragOutOfZone(this, noun, name, commentZone(this.page, group));
+  }
+);
+
+Then(
+  /^hängt (?:die|der) (Aktivität|Eintrag) "([^"]*)" an der Notizfläche "([^"]*)"$/,
+  async function (noun, name, label) {
+    await noteChip(infoZone(this.page, label), catOfNoun(noun), name)
+      .first()
+      .waitFor({ state: "visible" });
+  }
+);
+
+Then(
+  /^hängt (?:die|der) (Aktivität|Eintrag) "([^"]*)" nicht an der Notizfläche "([^"]*)"$/,
+  async function (noun, name, label) {
+    assert.strictEqual(
+      await noteChip(infoZone(this.page, label), catOfNoun(noun), name).count(),
+      0
+    );
+  }
+);
+
+Then(
+  /^hängt (?:die|der) (Aktivität|Eintrag) "([^"]*)" an der Notizfläche der Gruppe "([^"]*)"$/,
+  async function (noun, name, group) {
+    await noteChip(commentZone(this.page, group), catOfNoun(noun), name)
+      .first()
+      .waitFor({ state: "visible" });
+  }
+);
+
+Then(
+  /^hängt (?:die|der) (Aktivität|Eintrag) "([^"]*)" nicht an der Notizfläche der Gruppe "([^"]*)"$/,
+  async function (noun, name, group) {
+    assert.strictEqual(
+      await noteChip(commentZone(this.page, group), catOfNoun(noun), name).count(),
+      0
+    );
+  }
+);
+
 When(/^ich den (Aktivitäten|Sonstiges)-Dialog öffne$/, async function (label) {
   const cat = catOfLabel(label);
   await this.page.locator(cat === "activity" ? "#btnActivities" : "#btnMisc").click();

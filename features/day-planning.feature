@@ -70,3 +70,57 @@ Funktionalität: Tagesplanung
   Szenario: Gruppe-Kommentar erfassen
     Wenn ich für die Gruppe "Sonne" den Kommentar "Bringdienst beachten" eintrage
     Dann enthält der Kommentar der Gruppe "Sonne" "Bringdienst beachten"
+
+  Szenario: Aktivität an Info Kita hängen und wieder entfernen
+    Wenn ich die Aktivität "Fußball spielen" in die Notizfläche "Info Kita" ziehe
+    Dann hängt die Aktivität "Fußball spielen" an der Notizfläche "Info Kita"
+    Wenn ich die Aktivität "Fußball spielen" aus der Notizfläche "Info Kita" entferne
+    Dann hängt die Aktivität "Fußball spielen" nicht an der Notizfläche "Info Kita"
+
+  Szenario: Eintrag an Info Tag hängen und wieder entfernen
+    Wenn ich den Eintrag "Fotograf" in die Notizfläche "Info Tag" ziehe
+    Dann hängt der Eintrag "Fotograf" an der Notizfläche "Info Tag"
+    Wenn ich den Eintrag "Fotograf" aus der Notizfläche "Info Tag" entferne
+    Dann hängt der Eintrag "Fotograf" nicht an der Notizfläche "Info Tag"
+
+  Szenario: Aktivität an den Kommentar einer Gruppe hängen und wieder entfernen
+    Wenn ich die Aktivität "Turnen" in die Notizfläche der Gruppe "Mond" ziehe
+    Dann hängt die Aktivität "Turnen" an der Notizfläche der Gruppe "Mond"
+    Und hängt die Aktivität "Turnen" nicht an der Notizfläche der Gruppe "Sonne"
+    Wenn ich die Aktivität "Turnen" aus der Notizfläche der Gruppe "Mond" entferne
+    Dann hängt die Aktivität "Turnen" nicht an der Notizfläche der Gruppe "Mond"
+
+  Szenario: Notiz neben dem Freitext bleibt erhalten
+    Wenn ich die Aktivität "Elterncafé" in die Notizfläche "Info Tag" ziehe
+    Und ich als Info Tag "Ausflug Zoo" eintrage
+    Dann hängt die Aktivität "Elterncafé" an der Notizfläche "Info Tag"
+    Und enthält das Feld Info Tag "Ausflug Zoo"
+
+  Szenario: Notiz bleibt beim Tageswechsel am jeweiligen Tag
+    Wenn ich die Aktivität "Turnen" in die Notizfläche "Info Tag" ziehe
+    Und ich den Tag "Dienstag" wähle
+    Dann hängt die Aktivität "Turnen" nicht an der Notizfläche "Info Tag"
+    Wenn ich den Tag "Montag" wähle
+    Dann hängt die Aktivität "Turnen" an der Notizfläche "Info Tag"
+
+  Szenario: Info Kita gilt für die ganze Woche
+    Wenn ich die Aktivität "Turnen" in die Notizfläche "Info Kita" ziehe
+    Und ich den Tag "Mittwoch" wähle
+    Dann hängt die Aktivität "Turnen" an der Notizfläche "Info Kita"
+
+  Szenario: Ziehen ins Freitextfeld landet in der Notizfläche
+    Wenn ich die Aktivität "Turnen" auf das Freitextfeld "Info Tag" ziehe
+    Dann hängt die Aktivität "Turnen" an der Notizfläche "Info Tag"
+    Und enthält das Feld Info Tag nicht "Turnen"
+
+  Szenario: Ziehen ins Kommentarfeld landet in der Notizfläche
+    Wenn ich den Eintrag "Fotograf" auf das Kommentarfeld der Gruppe "Sonne" ziehe
+    Dann hängt der Eintrag "Fotograf" an der Notizfläche der Gruppe "Sonne"
+    Und enthält der Kommentar der Gruppe "Sonne" nicht "Fotograf"
+
+  Szenario: An ein Info-Feld gehängte Aktivität kann nicht gelöscht werden
+    Wenn ich die Aktivität "Elterncafé" in die Notizfläche "Info Kita" ziehe
+    Und ich den Aktivitäten-Dialog öffne
+    Und ich versuche die Aktivität "Elterncafé" zu löschen
+    Dann erscheint eine Meldung die "kann nicht gelöscht werden" enthält
+    Und sehe ich im Aktivitäten-Dialog die Aktivität "Elterncafé"

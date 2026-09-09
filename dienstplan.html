@@ -76,6 +76,13 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .commentcol{padding:6px;border-bottom:1px solid var(--line);background:#fafcfe}
 .commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:vertical;min-height:44px;background:#fff}
 
+/* ---- Notizzonen (Info Kita / Info Tag / Kommentar) ---- */
+/* Ablagefläche für Aktivitäten & Sonstiges, direkt über dem Freitextfeld. */
+.notezone{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:30px;padding:4px;
+  border:1px dashed var(--line-strong);border-radius:5px;background:#fff;margin-bottom:6px}
+.notezone.dragover{outline:2px dashed var(--accent);outline-offset:-3px;background:#e4f2ea}
+.notezone .zonehint{color:var(--muted);font-size:11px}
+
 /* ---- dialogs / staff ---- */
 dialog{border:none;border-radius:10px;padding:0;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:340px}
 #staffDialog{max-width:min(560px,95vw);width:560px}
@@ -198,7 +205,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <button id="btnGroups">🧩 Gruppen</button>
   <button id="btnActivities">🎈 Aktivitäten</button>
   <button id="btnMisc">⭐ Sonstiges</button>
-  <span class="hint">Mitarbeiter, Aktivitäten &amp; Sonstiges per Ziehen in Schicht &amp; Gruppe einteilen · Klick auf Chip = Status/Abwesenheit</span>
+  <span class="hint">Mitarbeiter, Aktivitäten &amp; Sonstiges per Ziehen in Schicht &amp; Gruppe einteilen · Aktivitäten &amp; Sonstiges auch in Info- und Kommentar-Flächen · Klick auf Chip = Status/Abwesenheit</span>
 </div>
 
 <div class="layout">
@@ -207,10 +214,10 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     <div class="poolnote">Ziehe Personen in eine Zelle. Aus einer Zelle zurück hierher zieht sie wieder heraus.</div>
     <div id="pool"></div>
     <h3 class="sec">Aktivitäten</h3>
-    <div class="poolnote">Ziehe eine Aktivität in eine Zelle – sie kann mehrfach eingeplant werden.</div>
+    <div class="poolnote">Ziehe eine Aktivität in eine Zelle oder in eine Info-/Kommentar-Fläche – sie kann mehrfach eingeplant werden.</div>
     <div id="activityPool" class="itempool"></div>
     <h3 class="sec">Sonstiges</h3>
-    <div class="poolnote">Ziehe einen Eintrag in eine Zelle – er kann mehrfach eingeplant werden.</div>
+    <div class="poolnote">Ziehe einen Eintrag in eine Zelle oder in eine Info-/Kommentar-Fläche – er kann mehrfach eingeplant werden.</div>
     <div id="miscPool" class="itempool"></div>
   </aside>
   <main class="main">
@@ -225,8 +232,12 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     <div class="grid" id="grid"></div>
     <div class="legend" id="legend"></div>
     <div class="house">
-      <div class="box"><h4>Info Kita (ganzes Haus)</h4><textarea id="houseInfo" placeholder="Termine, Besonderheiten für das ganze Haus …"></textarea></div>
-      <div class="box"><h4>Info Tag</h4><textarea id="dayInfo" placeholder="Notizen zu diesem Tag …"></textarea></div>
+      <div class="box"><h4>Info Kita (ganzes Haus)</h4>
+        <div class="notezone" id="houseInfoItems"></div>
+        <textarea id="houseInfo" placeholder="Termine, Besonderheiten für das ganze Haus …"></textarea></div>
+      <div class="box"><h4>Info Tag</h4>
+        <div class="notezone" id="dayInfoItems"></div>
+        <textarea id="dayInfo" placeholder="Notizen zu diesem Tag …"></textarea></div>
     </div>
   </main>
 </div>
@@ -469,6 +480,7 @@ const Groups = {
   },
   isUsed(staff,weeks,name){
     if((staff||[]).some(p=>p.stamm===name)) return true;
+    if(Notes.groupUsed(weeks,name)) return true;
     return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>{
       if(((d.comments||{})[name]||"").trim()) return true;
       return Object.values(d.assign||{}).some(a=>a.group===name);
@@ -527,9 +539,10 @@ const Catalog = {
     return cat.icons.find(i=>!used.has(i)) || cat.icons[0];
   },
   isUsed(cat,weeks,key){
-    return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
+    const inGrid=Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
       Catalog.listOf(cat,d).some(p=>p.name===key)
     ));
+    return inGrid || Notes.isUsed(weeks,cat.key,key);
   },
   add(cat,list,name,icon){
     list.push({name, icon:icon || Catalog.defaultIcon(cat,list)});
@@ -551,6 +564,98 @@ const Catalog = {
     Object.values(weeks||{}).forEach(wk=>(wk.days||[]).forEach(d=>
       Catalog.listOf(cat,d).forEach(p=>{ if(p.name===oldKey) p.name=newKey; })
     ));
+    Notes.rekey(weeks,cat.key,oldKey,newKey);
+  },
+};
+
+// ---------- Notes (rein) ----------
+// Katalog-Einträge, die an einem Freitextfeld hängen statt im Schichtraster:
+//   Info Kita  -> week.infoItems
+//   Info Tag   -> day.infoItems
+//   Kommentar  -> day.commentItems[<Gruppe>]
+// Ein Notiz-Eintrag ist {id, cat, name} – `cat` ist der Kategorie-Schlüssel,
+// `name` der Katalog-Schlüssel (wie bei Planungen im Raster).
+// Eine Zone wird über ihre Id angesprochen: "house", "day" oder "cmt:<Gruppe>".
+const Notes = {
+  HOUSE:"house", DAY:"day", COMMENT:"cmt",
+
+  zoneId(kind,group){ return kind===Notes.COMMENT ? Notes.COMMENT+":"+group : kind; },
+  /** Gruppennamen dürfen ":" enthalten – deshalb nur am ersten ":" trennen. */
+  parseZone(zoneId){
+    const s=String(zoneId||"");
+    const pre=Notes.COMMENT+":";
+    return s.startsWith(pre) ? {kind:Notes.COMMENT, group:s.slice(pre.length)} : {kind:s, group:null};
+  },
+
+  // Lesend (ohne Seiteneffekt) – für Projektionen und Druck.
+  readWeek(week){ return (week && week.infoItems) || []; },
+  readDay(day){ return (day && day.infoItems) || []; },
+  readComment(day,group){ return ((day && day.commentItems) || {})[group] || []; },
+
+  /** Liste unter `key`; fehlt sie, wird sie leer angelegt (alte Stände). */
+  listOf(holder,key){
+    if(!holder) return [];
+    if(!Array.isArray(holder[key])) holder[key]=[];
+    return holder[key];
+  },
+  ofWeek(week){ return Notes.listOf(week,"infoItems"); },
+  ofDay(day){ return Notes.listOf(day,"infoItems"); },
+  ofComment(day,group){
+    if(!day) return [];
+    if(!day.commentItems || typeof day.commentItems!=="object") day.commentItems={};
+    return Notes.listOf(day.commentItems,group);
+  },
+  /** Liste einer Zone im Kontext von Woche und Tag; null bei unbekannter Zone. */
+  ofZone(zoneId,week,day){
+    const z=Notes.parseZone(zoneId);
+    if(z.kind===Notes.HOUSE) return Notes.ofWeek(week);
+    if(z.kind===Notes.DAY) return Notes.ofDay(day);
+    if(z.kind===Notes.COMMENT) return Notes.ofComment(day,z.group);
+    return null;
+  },
+
+  all(list){ return list||[]; },
+  find(list,id){ return Notes.all(list).find(n=>n.id===id); },
+  nextId(list){
+    return String(Notes.all(list).reduce((m,n)=>Math.max(m, Number(n.id)||0), 0)+1);
+  },
+  add(list,{cat,name}){
+    const note={id:Notes.nextId(list), cat, name};
+    list.push(note);
+    return note;
+  },
+  remove(list,id){
+    const i=Notes.all(list).findIndex(n=>n.id===id);
+    if(i>=0) list.splice(i,1);
+  },
+
+  /** Alle Notizlisten aller Wochen – Basis für Verwendungsprüfung und Umschlüsseln. */
+  eachList(weeks,fn){
+    Object.values(weeks||{}).forEach(wk=>{
+      fn(wk.infoItems);
+      (wk.days||[]).forEach(d=>{
+        fn(d.infoItems);
+        Object.values(d.commentItems||{}).forEach(fn);
+      });
+    });
+  },
+  isUsed(weeks,catKey,key){
+    let used=false;
+    Notes.eachList(weeks,list=>{
+      if(Notes.all(list).some(n=>n.cat===catKey && n.name===key)) used=true;
+    });
+    return used;
+  },
+  rekey(weeks,catKey,oldKey,newKey){
+    Notes.eachList(weeks,list=>{
+      Notes.all(list).forEach(n=>{ if(n.cat===catKey && n.name===oldKey) n.name=newKey; });
+    });
+  },
+  /** Hat eine Gruppe Notizen an ihrem Kommentar? (Löschschutz für Gruppen) */
+  groupUsed(weeks,group){
+    return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
+      Notes.all((d.commentItems||{})[group]).length>0
+    ));
   },
 };
 
@@ -558,7 +663,7 @@ const Catalog = {
 const Week = {
   /** Leerer Tag inkl. leerer Listen für alle Kategorien. */
   blankDay(assign){
-    const day={mode:"Normalbetrieb",info:"",assign:assign||{},comments:{}};
+    const day={mode:"Normalbetrieb",info:"",assign:assign||{},comments:{},infoItems:[],commentItems:{}};
     Constants.CATEGORIES.forEach(cat=>{ day[cat.listKey]=[]; });
     return day;
   },
@@ -566,6 +671,7 @@ const Week = {
     return {
       mondayISO,
       houseInfo:"",
+      infoItems:[],
       days:Constants.DAYS.map(()=>Week.blankDay()),
     };
   },
@@ -637,6 +743,7 @@ const Week = {
   reset(staff){
     return {
       houseInfo:"",
+      infoItems:[],
       days:Constants.DAYS.map(()=>Week.blankDay(Week.defaultAssign(staff))),
     };
   },
@@ -680,6 +787,23 @@ const ViewModel = {
     };
   },
 
+  /** Notiz-Einträge einer Zone als Chip-Projektion (wie itemEntry, ohne Gruppe/Schicht). */
+  noteEntries(list,catalogs){
+    return Notes.all(list).reduce((out,n)=>{
+      const cat=Constants.category(n.cat);
+      if(!cat) return out;
+      const clist=Catalog.listOf(cat,catalogs);
+      out.push({
+        cat:cat.key,
+        id:n.id,
+        key:n.name,
+        name:Catalog.nameOf(clist,n.name),
+        icon:Catalog.iconOf(cat,clist,n.name),
+      });
+      return out;
+    },[]);
+  },
+
   /** `catalogs` = Objekt mit den Katalog-Listen aller Kategorien (i.d.R. der State). */
   forDay(day,staff,groups,catalogs){
     const assign=day.assign||{};
@@ -707,10 +831,16 @@ const ViewModel = {
         bucket.push(ViewModel.itemEntry(cat,p,list));
       });
     });
+    const commentItems={};
+    Groups.names(groups).forEach(g=>{
+      commentItems[g]=ViewModel.noteEntries(Notes.readComment(day,g),catalogs);
+    });
     return {
       mode:day.mode,
       info:day.info||"",
       comments:day.comments||{},
+      infoItems:ViewModel.noteEntries(Notes.readDay(day),catalogs),
+      commentItems,
       pool,
       cells,
       itemCells,
@@ -810,18 +940,23 @@ const Store = (() => {
 })();
 
 // ---------- Drag (rein: Transfer-Token) ----------
-// "staff:<Name>"            = Person
-// "item:<Kat>:<Name>"       = neuer Eintrag aus dem Pool einer Kategorie
-// "placement:<Kat>:<Id>"    = bereits geplanter Eintrag einer Kategorie
+// "staff:<Name>"              = Person
+// "item:<Kat>:<Name>"         = neuer Eintrag aus dem Pool einer Kategorie
+// "placement:<Kat>:<Id>"      = bereits geplanter Eintrag im Raster
+// "note:<Kat>:<Id>:<Zone>"    = Eintrag an einem Info-/Kommentar-Feld
 const Drag = {
   staff(name){ return "staff:"+name; },
   item(catKey,name){ return "item:"+catKey+":"+name; },
   placement(catKey,id){ return "placement:"+catKey+":"+id; },
+  note(catKey,id,zoneId){ return "note:"+catKey+":"+id+":"+zoneId; },
   parse(token){
     const parts=String(token||"").split(":");
     if(parts.length<2) return {kind:"staff", value:parts[0]||""};
     const kind=parts[0];
     if(kind==="staff") return {kind, value:parts.slice(1).join(":")};
+    // Bei Notizen steht die Zone am Ende – sie darf ":" enthalten (Gruppenname).
+    if(kind==="note")
+      return {kind, cat:Constants.category(parts[1]), value:parts[2]||"", zone:parts.slice(3).join(":")};
     return {kind, cat:Constants.category(parts[1]), value:parts.slice(2).join(":")};
   },
 };
@@ -870,6 +1005,18 @@ const View = {
 
     const vm=View.dayViewModel(day);
     View.renderGrid(day,vm,s.groups);
+    View.renderNoteZone(
+      document.getElementById("houseInfoItems"),
+      ViewModel.noteEntries(Notes.readWeek(wk), s),
+      Notes.HOUSE,
+      "Aktivität oder Sonstiges hierher ziehen"
+    );
+    View.renderNoteZone(
+      document.getElementById("dayInfoItems"),
+      vm.infoItems,
+      Notes.DAY,
+      "Aktivität oder Sonstiges hierher ziehen"
+    );
     View.renderPool(day,vm);
     View.renderItemPools(s);
     View.renderLegend(s.groups);
@@ -901,11 +1048,15 @@ const View = {
         grid.appendChild(cell);
       });
       const cc=document.createElement("div"); cc.className="commentcol";
+      const zone=document.createElement("div"); zone.className="notezone";
+      cc.appendChild(zone);
+      View.renderNoteZone(zone, vm.commentItems[g]||[], Notes.zoneId(Notes.COMMENT,g), "hierher ziehen");
       const ta=document.createElement("textarea");
       ta.value=vm.comments[g]||""; ta.placeholder="…";
       ta.oninput=()=>{
         Store.mutateQuiet(()=>{ Store.currentDay().comments[g]=ta.value; });
       };
+      View.wireTextZoneDrop(ta,zone);
       cc.appendChild(ta); grid.appendChild(cc);
     });
   },
@@ -924,8 +1075,9 @@ const View = {
     return c;
   },
 
-  /** Chip eines Katalog-Eintrags – im Raster (mit Platzierungs-Id) oder im Pool (ohne). */
-  makeItemChip(entry){
+  /** Chip eines Katalog-Eintrags – im Pool (ohne Id), im Raster (mit Platzierungs-Id)
+      oder an einem Info-/Kommentar-Feld (mit `zoneId`). */
+  makeItemChip(entry,zoneId){
     const c=document.createElement("div");
     c.className="chip item";
     c.draggable=true;
@@ -936,7 +1088,12 @@ const View = {
     c.appendChild(ico);
     // Namenlose Einträge zeigen nur das Symbol.
     if(entry.name) c.appendChild(document.createTextNode(entry.name));
-    if(entry.id){
+    if(zoneId){
+      c.dataset.note=entry.id;
+      c.dataset.zone=zoneId;
+      c.title="Zum Entfernen nach links in den Pool ziehen";
+      c.ondragstart=e=>{const t=Drag.note(entry.cat,entry.id,zoneId);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
+    }else if(entry.id){
       c.dataset.placement=entry.id;
       c.ondragstart=e=>{const t=Drag.placement(entry.cat,entry.id);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
       c.onclick=()=>ItemDialog.open(Constants.category(entry.cat),entry.id);
@@ -944,6 +1101,19 @@ const View = {
       c.ondragstart=e=>{const t=Drag.item(entry.cat,entry.key);e.dataTransfer.setData("text/plain",t);Store.setDragToken(t);};
     }
     return c;
+  },
+
+  /** Ablagefläche eines Info-/Kommentar-Feldes füllen und als Drop-Ziel schalten. */
+  renderNoteZone(el,entries,zoneId,hint){
+    el.innerHTML="";
+    el.dataset.zone=zoneId;
+    entries.forEach(entry=>el.appendChild(View.makeItemChip(entry,zoneId)));
+    if(!entries.length){
+      const h=document.createElement("span");
+      h.className="zonehint"; h.textContent=hint;
+      el.appendChild(h);
+    }
+    View.wireNoteDrop(el);
   },
 
   renderPool(day,vm){
@@ -983,6 +1153,7 @@ const View = {
       const token=e.dataTransfer.getData("text/plain")||Store.getDragToken();
       if(!token)return;
       const {kind,cat,value}=Drag.parse(token);
+      if(kind==="note") return; // Notizen gehören an die Info-/Kommentar-Felder
       if((kind==="item"||kind==="placement") && !cat) return;
       const target={shift:cell.dataset.shift, group:cell.dataset.group};
       Store.mutate(s=>{
@@ -994,6 +1165,53 @@ const View = {
     };
   },
 
+  /** Eintrag aus dem Pool aufnehmen bzw. Notiz aus einer anderen Zone übernehmen. */
+  dropIntoZone(token,targetZone){
+    if(!token || !targetZone) return;
+    const {kind,cat,value,zone}=Drag.parse(token);
+    if((kind!=="item" && kind!=="note") || !cat) return;
+    if(kind==="note" && zone===targetZone) return;
+    Store.mutate(()=>{
+      const week=Store.currentWeek(), day=Store.currentDay();
+      const target=Notes.ofZone(targetZone,week,day);
+      if(!target) return;
+      if(kind==="item"){ Notes.add(target,{cat:cat.key,name:value}); return; }
+      const source=Notes.ofZone(zone,week,day);
+      const note=Notes.find(source,value);
+      if(!note) return;
+      Notes.remove(source,value);
+      Notes.add(target,{cat:note.cat,name:note.name});
+    });
+  },
+
+  /** Notizzone: nimmt Einträge aus dem Pool auf und verschiebt Notizen zwischen Zonen. */
+  wireNoteDrop(el){
+    el.ondragover=e=>{e.preventDefault();el.classList.add("dragover");};
+    el.ondragleave=()=>el.classList.remove("dragover");
+    el.ondrop=e=>{
+      e.preventDefault();e.stopPropagation();el.classList.remove("dragover");
+      View.dropIntoZone(e.dataTransfer.getData("text/plain")||Store.getDragToken(), el.dataset.zone);
+    };
+  },
+
+  /** Freitextfeld einer Zone: Chips landen in der Notizfläche statt als Text im
+      Textfeld. Nur wenn gerade ein Chip gezogen wird – sonst bleibt das normale
+      Verhalten des Textfeldes (Text ziehen) erhalten. */
+  wireTextZoneDrop(ta,zoneEl){
+    ta.ondragover=e=>{
+      if(!Store.getDragToken()) return;
+      e.preventDefault();
+      zoneEl.classList.add("dragover");
+    };
+    ta.ondragleave=()=>zoneEl.classList.remove("dragover");
+    ta.ondrop=e=>{
+      if(!Store.getDragToken()) return;
+      e.preventDefault();e.stopPropagation();
+      zoneEl.classList.remove("dragover");
+      View.dropIntoZone(e.dataTransfer.getData("text/plain")||Store.getDragToken(), zoneEl.dataset.zone);
+    };
+  },
+
   wirePoolDrop(){
     const aside=document.getElementById("poolAside");
     aside.ondragover=e=>{e.preventDefault();aside.classList.add("dragover");};
@@ -1002,12 +1220,13 @@ const View = {
       e.preventDefault();aside.classList.remove("dragover");
       const token=e.dataTransfer.getData("text/plain")||Store.getDragToken();
       if(!token) return;
-      const {kind,cat,value}=Drag.parse(token);
+      const {kind,cat,value,zone}=Drag.parse(token);
       if(kind==="item") return; // Eintrag aus dem Pool zurück in den Pool: nichts zu tun
-      if(kind==="placement" && !cat) return;
+      if((kind==="placement"||kind==="note") && !cat) return;
       Store.mutate(()=>{
         const day=Store.currentDay();
         if(kind==="placement") Week.removeItem(day, cat, value);
+        else if(kind==="note") Notes.remove(Notes.ofZone(zone, Store.currentWeek(), day), value);
         else Week.unassign(day, value);
       });
     };
@@ -1462,6 +1681,14 @@ const Persistence = {
         (wk.days||[]).forEach(d=>{ Catalog.listOf(cat,d); });
       });
     });
+    // Notizlisten an Info-/Kommentar-Feldern anlegen (ältere Stände kennen sie nicht)
+    Object.values(raw.weeks).forEach(wk=>{
+      Notes.ofWeek(wk);
+      (wk.days||[]).forEach(d=>{
+        Notes.ofDay(d);
+        if(!d.commentItems || typeof d.commentItems!=="object") d.commentItems={};
+      });
+    });
     return raw;
   },
 
@@ -1555,6 +1782,13 @@ const Print = {
       +(entry.name?' '+Print.esc(entry.name):'')+'</span>';
   },
 
+  /** Notiz-Einträge eines Info-/Kommentar-Feldes vor dem Freitext. */
+  notesHtml(entries,text){
+    const items=(entries||[]).map(Print.itemHtml).join(", ");
+    const txt=Print.esc(text||"");
+    return items && txt ? items+" · "+txt : items+txt;
+  },
+
   buildDay(wk,di,staff,groups,catalogs){
     const mon=Dates.toDate(wk.mondayISO);
     const day=wk.days[di];
@@ -1586,13 +1820,14 @@ const Print = {
           +'<td class="shift s-frueh">'+cell("frueh")+'</td>'
           +'<td class="shift s-mittel">'+cell("mittel")+'</td>'
           +'<td class="shift s-spaet">'+cell("spaet")+'</td>'
-          +'<td class="cmt">'+Print.esc(vm.comments[g]||"")+'</td>'
+          +'<td class="cmt">'+Print.notesHtml(vm.commentItems[g],vm.comments[g])+'</td>'
           +'</tr>';
     });
     html+='</tbody></table>';
 
-    if(vm.info && vm.info.trim())
-      html+='<div class="pr-dayinfo"><b>Info Tag:</b> '+Print.esc(vm.info)+'</div>';
+    const dayInfo=Print.notesHtml(vm.infoItems, (vm.info||"").trim());
+    if(dayInfo)
+      html+='<div class="pr-dayinfo"><b>Info Tag:</b> '+dayInfo+'</div>';
 
     html+='</div>';
     return html;
@@ -1603,8 +1838,10 @@ const Print = {
     let html='<section class="pr-week">';
     html+='<div class="pr-weekhead"><h1>🐣 Dienstplan Spatzennest</h1>'
         +'<span class="sub">KW '+Dates.isoWeek(mon)+' · '+Dates.fmtDE(mon)+' – '+Dates.fmtDE(Dates.addDays(mon,4))+'</span></div>';
-    if(wk.houseInfo && wk.houseInfo.trim())
-      html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+Print.esc(wk.houseInfo)+'</div>';
+    const houseInfo=Print.notesHtml(
+      ViewModel.noteEntries(Notes.readWeek(wk),catalogs), (wk.houseInfo||"").trim());
+    if(houseInfo)
+      html+='<div class="pr-houseinfo"><b>Info Kita:</b> '+houseInfo+'</div>';
     Constants.DAYS.forEach((_,di)=>{ html+=Print.buildDay(wk,di,staff,groups,catalogs); });
     html+='<div class="pr-legend">';
     Groups.names(groups).forEach(g=>{
@@ -1657,6 +1894,15 @@ const App = {
   wire(){
     Store.subscribe(()=>View.render());
 
+    // Ende eines Ziehvorgangs: Merker löschen, damit die Textfelder wieder
+    // normales Text-Ziehen erlauben (siehe View.wireTextZoneDrop).
+    document.addEventListener("dragend",()=>Store.setDragToken(null));
+
+    View.wireTextZoneDrop(
+      document.getElementById("houseInfo"), document.getElementById("houseInfoItems"));
+    View.wireTextZoneDrop(
+      document.getElementById("dayInfo"), document.getElementById("dayInfoItems"));
+
     document.getElementById("dayMode").onchange=e=>{
       Store.mutateQuiet(()=>{ Store.currentDay().mode=e.target.value; });
     };
@@ -1681,6 +1927,7 @@ const App = {
         const wk=s.weeks[Store.weekKey()];
         wk.days=reset.days;
         wk.houseInfo=reset.houseInfo;
+        wk.infoItems=reset.infoItems;
       });
     };
     document.getElementById("btnCopyPrev").onclick=()=>{

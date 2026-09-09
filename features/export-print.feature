@@ -18,6 +18,13 @@ Funktionalität: Export und Druck
     Und enthält die Druckansicht der aktuellen Woche "🤸 Turnen"
     Und enthält die Druckansicht der aktuellen Woche "⭐ Sommerfest"
 
+  Szenario: Notizen an Info Kita und Gruppenkommentar erscheinen im Ausdruck
+    Wenn ich die Aktivität "Elterncafé" in die Notizfläche "Info Kita" ziehe
+    Und ich den Eintrag "Fotograf" in die Notizfläche der Gruppe "Sonne" ziehe
+    Dann enthält die Druckansicht der aktuellen Woche "Info Kita:"
+    Und enthält die Druckansicht der aktuellen Woche "☕ Elterncafé"
+    Und enthält die Druckansicht der aktuellen Woche "📷 Fotograf"
+
   Szenario: Volle Schichtzelle läuft im Druck nicht seitlich aus der Zelle
     Angenommen ist "Bernd" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
     Und ist "Clara" in Gruppe "Sonne" und Schicht "Frühschicht" eingeteilt
