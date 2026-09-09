@@ -81,6 +81,15 @@ Then("ist der Chip {string} als {string} markiert", async function (name, away) 
   );
 });
 
+Then("ist der Chip {string} ausgegraut dargestellt", async function (name) {
+  const chip = this.page.locator(`#grid .chip[data-name="${name}"]`);
+  const opacity = await chip.evaluate((el) => getComputedStyle(el).opacity);
+  assert.ok(
+    parseFloat(opacity) < 1,
+    `Chip "${name}" sollte ausgegraut sein, Deckkraft war "${opacity}"`
+  );
+});
+
 Then("ist der Chip {string} als Gasteinsatz markiert", async function (name) {
   const chip = this.page.locator(`#grid .chip[data-name="${name}"]`);
   const cls = await chip.getAttribute("class");

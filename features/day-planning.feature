@@ -53,6 +53,14 @@ Funktionalität: Tagesplanung
     Und ich im Chip-Dialog die Abwesenheit "krank" wähle
     Und ich den Chip-Dialog mit "Übernehmen" bestätige
     Dann ist der Chip "Erik" als "krank" markiert
+    Und ist der Chip "Erik" ausgegraut dargestellt
+
+  Szenario: Person als abwesend (Sonstiges) markieren
+    Wenn ich den Chip "Erik" öffne
+    Und ich im Chip-Dialog die Abwesenheit "Sonstiges" wähle
+    Und ich den Chip-Dialog mit "Übernehmen" bestätige
+    Dann ist der Chip "Erik" als "sonstiges" markiert
+    Und ist der Chip "Erik" ausgegraut dargestellt
 
   Szenario: Person aus dem Plan nehmen
     Wenn ich den Chip "Mirjam" öffne
