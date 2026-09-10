@@ -1,5 +1,9 @@
 # Änderungen seit Version 7c56c0d
 
+## 0. Automatisch speichern – neu
+
+In der Toolbar gibt es die Option **Automatisch speichern**. Ist die Checkbox angehakt, wird jede Änderung sofort im Browser (localStorage) gesichert – der Button „Speichern“ ist dann nicht mehr nötig. Die Einstellung selbst bleibt nach dem Schließen erhalten. Manuelles Speichern und „Speichern unter…“ funktionieren weiterhin.
+
 ## 1. Aktivitäten – neu
 
 Es gibt jetzt einen eigenen **Aktivitäten-Katalog** neben dem Personal:
