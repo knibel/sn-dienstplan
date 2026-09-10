@@ -26,6 +26,8 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .toolbar{background:#fff;border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:44px;z-index:29}
 .toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 .toolbar .hint{color:var(--muted);font-size:11.5px;margin-left:auto}
+.toolbar .autosave{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink);user-select:none;cursor:pointer}
+.toolbar .autosave input{margin:0;cursor:pointer}
 .layout{display:flex;gap:0;align-items:flex-start}
 .main{flex:1;padding:14px;overflow-x:auto}
 .daytabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
@@ -195,6 +197,9 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <button id="btnSave">💾 Speichern</button>
   <button id="btnSaveAs">💾 Speichern unter…</button>
   <button id="btnLoad">📂 Laden</button>
+  <label class="autosave" title="Jede Änderung sofort im Browser speichern">
+    <input type="checkbox" id="chkAutoSave"> Automatisch speichern
+  </label>
   <input type="file" id="fileInput" accept=".json" style="display:none">
   <span class="sep"></span>
   <button id="btnPrint">🖨 Drucken / PDF</button>
@@ -394,6 +399,7 @@ const Constants = {
   AWAY_LABEL: {krank:"krank",urlaub:"Urlaub",sonstiges:"Sonst."},
   DAYS: ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"],
   STORAGE_KEY: "dienstplan_spatzennest",
+  AUTOSAVE_KEY: "dienstplan_spatzennest_autosave",
 };
 
 // ---------- Dates (rein) ----------
@@ -864,17 +870,28 @@ const Store = (() => {
   let itemDlg = { cat:null, id:null, day:null };
 
   const listeners = new Set();
+  const changeListeners = new Set();
   let txDepth = 0;
   let dirty = false;
+  let domainDirty = false;
+
+  function emitChange(){
+    changeListeners.forEach(fn=>fn());
+  }
 
   function flush(){
     if(txDepth>0){ dirty=true; return; }
     dirty=false;
     listeners.forEach(fn=>fn());
+    if(domainDirty){
+      domainDirty=false;
+      emitChange();
+    }
   }
 
-  function schedule(){
+  function schedule(domainChanged){
     dirty=true;
+    if(domainChanged) domainDirty=true;
     if(txDepth===0) flush();
   }
 
@@ -890,8 +907,13 @@ const Store = (() => {
       listeners.add(fn);
       return ()=>listeners.delete(fn);
     },
+    /** Nach Domain-Änderungen (auch mutateQuiet), z.B. Auto-Save. */
+    onChange(fn){
+      changeListeners.add(fn);
+      return ()=>changeListeners.delete(fn);
+    },
     /** Explizit neu zeichnen (z.B. nach Dialog-Schließen ohne State-Änderung). */
-    notify(){ schedule(); },
+    notify(){ schedule(false); },
 
     /** Mehrere Mutationen, ein Notify. */
     transaction(fn){
@@ -906,23 +928,26 @@ const Store = (() => {
     /** Domänen-State ändern und View aktualisieren. */
     mutate(fn){
       fn(state);
-      schedule();
+      schedule(true);
     },
 
     /** Domänen-State ändern ohne Re-Render (Textfelder, Dialog-interne Edits). */
     mutateQuiet(fn){
       fn(state);
+      if(txDepth>0){ domainDirty=true; return; }
+      emitChange();
     },
 
     replaceState(next){
       state = next;
-      schedule();
+      schedule(true);
     },
 
     setCursor(weekKey, day){
       if(weekKey!=null) curWeekKey = weekKey;
       if(day!=null) curDay = day;
-      schedule();
+      // Cursor allein ist UI-Navigation; weekStartISO speichern wir beim Persist.
+      schedule(false);
     },
 
     /** Snapshot für Speichern inkl. aktueller Woche. */
@@ -1693,8 +1718,26 @@ const Persistence = {
     return raw;
   },
 
+  autoSave: false,
+  // Während Laden/Anwenden kein Auto-Save (sonst Endlosschleife / unnötiges Schreiben).
+  _suppressAutoSave: false,
+
   persist(){
     localStorage.setItem(Constants.STORAGE_KEY, JSON.stringify(Store.snapshot()));
+  },
+
+  readAutoSave(){
+    return localStorage.getItem(Constants.AUTOSAVE_KEY)==="1";
+  },
+
+  writeAutoSave(on){
+    Persistence.autoSave = !!on;
+    localStorage.setItem(Constants.AUTOSAVE_KEY, Persistence.autoSave ? "1" : "0");
+  },
+
+  maybeAutoSave(){
+    if(Persistence._suppressAutoSave || !Persistence.autoSave) return;
+    Persistence.persist();
   },
 
   read(){
@@ -1705,13 +1748,18 @@ const Persistence = {
   },
 
   apply(loaded){
-    Store.replaceState(loaded);
-    const keys = Object.keys(loaded.weeks||{}).sort();
-    const preferred = loaded.weekStartISO && loaded.weeks[loaded.weekStartISO]
-      ? loaded.weekStartISO
-      : keys[0];
-    if(preferred) App.gotoWeek(preferred);
-    else App.gotoWeek(Dates.iso(Dates.mondayOf(new Date())));
+    Persistence._suppressAutoSave = true;
+    try{
+      Store.replaceState(loaded);
+      const keys = Object.keys(loaded.weeks||{}).sort();
+      const preferred = loaded.weekStartISO && loaded.weeks[loaded.weekStartISO]
+        ? loaded.weekStartISO
+        : keys[0];
+      if(preferred) App.gotoWeek(preferred);
+      else App.gotoWeek(Dates.iso(Dates.mondayOf(new Date())));
+    }finally{
+      Persistence._suppressAutoSave = false;
+    }
   },
 
   async saveAsFile(){
@@ -1745,6 +1793,21 @@ const Persistence = {
   },
 
   wire(){
+    const chk = document.getElementById("chkAutoSave");
+    Persistence.autoSave = Persistence.readAutoSave();
+    chk.checked = Persistence.autoSave;
+    chk.onchange=()=>{
+      Persistence.writeAutoSave(chk.checked);
+      if(Persistence.autoSave){
+        Persistence.persist();
+        View.flash("Automatisch speichern an");
+      }else{
+        View.flash("Automatisch speichern aus");
+      }
+    };
+
+    Store.onChange(()=>Persistence.maybeAutoSave());
+
     document.getElementById("btnSave").onclick=()=>{
       Persistence.persist();
       View.flash("Gespeichert");

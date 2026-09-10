@@ -28,3 +28,25 @@ Funktionalität: Speichern und Wiederherstellen
     Dann wird eine JSON-Datei heruntergeladen
     Und erscheint der Hinweis "Datei gespeichert"
     Und enthält die heruntergeladene JSON-Datei "Exportnotiz"
+
+  Szenario: Automatisch speichern hält Änderungen ohne Speichern-Klick
+    Wenn ich Automatisch speichern aktiviere
+    Und ich als Info Tag "AutoSave Notiz" eintrage
+    Wenn ich die Anwendung schließe und wieder öffne
+    Dann enthält das Feld Info Tag "AutoSave Notiz"
+    Und ist Automatisch speichern aktiv
+
+  Szenario: Ohne Automatisch speichern gehen ungesicherte Änderungen verloren
+    Wenn ich als Info Tag "Nur im Speicher" eintrage
+    Wenn ich die Anwendung schließe und wieder öffne
+    Dann enthält das Feld Info Tag nicht "Nur im Speicher"
+
+  Szenario: Einstellung Automatisch speichern bleibt erhalten
+    Wenn ich Automatisch speichern aktiviere
+    Und ich den Plan speichere
+    Wenn ich die Anwendung schließe und wieder öffne
+    Dann ist Automatisch speichern aktiv
+    Wenn ich Automatisch speichern deaktiviere
+    Und ich den Plan speichere
+    Wenn ich die Anwendung schließe und wieder öffne
+    Dann ist Automatisch speichern inaktiv

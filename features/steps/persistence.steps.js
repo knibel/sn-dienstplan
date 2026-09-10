@@ -7,6 +7,28 @@ When("ich den Plan speichere", async function () {
   await this.page.locator("#btnSave").click();
 });
 
+When("ich Automatisch speichern aktiviere", async function () {
+  const chk = this.page.locator("#chkAutoSave");
+  if (!(await chk.isChecked())) {
+    await chk.check();
+  }
+});
+
+When("ich Automatisch speichern deaktiviere", async function () {
+  const chk = this.page.locator("#chkAutoSave");
+  if (await chk.isChecked()) {
+    await chk.uncheck();
+  }
+});
+
+Then("ist Automatisch speichern aktiv", async function () {
+  assert.strictEqual(await this.page.locator("#chkAutoSave").isChecked(), true);
+});
+
+Then("ist Automatisch speichern inaktiv", async function () {
+  assert.strictEqual(await this.page.locator("#chkAutoSave").isChecked(), false);
+});
+
 When("ich Speichern unter wähle", async function () {
   const [download] = await Promise.all([
     this.page.waitForEvent("download"),
