@@ -56,7 +56,7 @@ Funktionalität: Gruppenverwaltung
       | Wolken              |
       | Leitung             |
 
-  Szenario: Gruppe mit nur eingeteilten Springern und Praktikanten/-innen löschen
+  Szenario: Gruppe mit nur eingeteilten SpringerInnen und PraktikantInnen löschen
     Wenn ich den Gruppen-Dialog öffne
     Und ich eine neue Gruppe "Füchse" hinzufüge
     Und ich den Gruppen-Dialog schließe

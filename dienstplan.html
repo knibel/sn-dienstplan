@@ -74,8 +74,8 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .chip.away-urlaub{opacity:.55}
 .chip.away-sonstiges{opacity:.55}
 .chip small{font-size:9px;opacity:.85;background:rgba(0,0,0,.22);padding:1px 4px;border-radius:6px}
-/* Springer / Praktikant/-in: Kennzeichnung am Chip, jeweils eigene Farbe.
-   Springer = weiß, Praktikant/-in = gelb – so sind beide auf jeder Gruppenfarbe
+/* SpringerIn / PraktikantIn: Kennzeichnung am Chip, jeweils eigene Farbe.
+   SpringerIn = weiß, PraktikantIn = gelb – so sind beide auf jeder Gruppenfarbe
    und voneinander unterscheidbar. */
 .chip small.role{opacity:1;font-weight:700;letter-spacing:.2px}
 .chip small.role.springer{background:#fff;color:var(--ink)}
@@ -173,7 +173,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   .pr-person.away{color:#999}
   .pr-person.away.krank{text-decoration:line-through}
   .pr-person .tag{font-size:7pt;color:#666}
-  /* Springer / Praktikant/-in: Name auf einer dezent gefärbten Kachel, ohne Rahmen
+  /* SpringerIn / PraktikantIn: Name auf einer dezent gefärbten Kachel, ohne Rahmen
      und ohne Zusatztext – siehe Legende. Die Farben heben sich von allen drei
      Schichttönungen (gelb/blau/violett) ab. */
   .pr-person.role-springer,.pr-person.role-praktikant{border-radius:3px;padding:0 4px}
@@ -223,7 +223,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <button id="btnGroups">🧩 Gruppen</button>
   <button id="btnActivities">🎈 Aktivitäten</button>
   <button id="btnMisc">⭐ Sonstiges</button>
-  <span class="hint">Mitarbeiter, Aktivitäten &amp; Sonstiges per Ziehen in Schicht &amp; Gruppe einteilen · Aktivitäten &amp; Sonstiges auch in Info- und Kommentar-Flächen · Klick auf Chip = Status/Abwesenheit</span>
+  <span class="hint">MitarbeiterInnen, Aktivitäten &amp; Sonstiges per Ziehen in Schicht &amp; Gruppe einteilen · Aktivitäten &amp; Sonstiges auch in Info- und Kommentar-Flächen · Klick auf Chip = Status/Abwesenheit</span>
 </div>
 
 <div class="layout">
@@ -291,7 +291,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
     <strong style="font-size:12px">Neue Person</strong>
     <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
       <input id="newName" placeholder="Name" style="flex:1;min-width:110px">
-      <select id="newRole" style="flex:1;min-width:110px" title="Springer und Praktikanten/-innen haben keine Stammgruppe"></select>
+      <select id="newRole" style="flex:1;min-width:110px" title="SpringerInnen und PraktikantInnen haben keine Stammgruppe"></select>
       <select id="newGroup" style="flex:1;min-width:110px"></select>
       <button id="newAdd" class="primary" style="border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Hinzufügen</button>
     </div>
@@ -407,12 +407,12 @@ const Constants = {
   ],
   /** Kategorie-Konfiguration zu einem Schlüssel (z.B. "activity"). */
   category(key){ return Constants.CATEGORIES.find(c=>c.key===key); },
-  /** Personal-Typ. Der Schlüssel "" steht für festangestellte Mitarbeiter/-innen
-      mit Stammgruppe; Springer und Praktikanten/-innen haben keine. */
+  /** Personal-Typ. Der Schlüssel "" steht für festangestellte MitarbeiterInnen
+      mit Stammgruppe; SpringerInnen und PraktikantInnen haben keine. */
   ROLES: [
-    {key:"", label:"Mitarbeiter/-in"},
-    {key:"springer", label:"Springer"},
-    {key:"praktikant", label:"Praktikant/-in"},
+    {key:"", label:"MitarbeiterIn"},
+    {key:"springer", label:"SpringerIn"},
+    {key:"praktikant", label:"PraktikantIn"},
   ],
   roleLabel(key){
     const r=Constants.ROLES.find(r=>r.key===(key||""));
@@ -468,7 +468,7 @@ const Dates = {
 // ---------- Staff (rein: arbeitet auf übergebenen Daten) ----------
 // Person: {name, stamm, role, active}
 // role = "" (Stammgruppe), "springer" oder "praktikant" (siehe Constants.ROLES).
-// Springer und Praktikanten/-innen haben keine Stammgruppe (stamm = null).
+// SpringerInnen und PraktikantInnen haben keine Stammgruppe (stamm = null).
 const Staff = {
   all(staff){ return staff||[]; },
   active(staff){ return Staff.all(staff).filter(s=>s.active!==false); },
@@ -476,7 +476,7 @@ const Staff = {
   roleOf(person){ return (person && person.role) || ""; },
   /** Kennzeichnung einer Person nach Namen ("" = Stammgruppe). */
   roleOfName(staff,n){ return Staff.roleOf(Staff.byName(staff,n)); },
-  /** Stammgruppe; null für Springer / Praktikanten/-innen. */
+  /** Stammgruppe; null für SpringerInnen / PraktikantInnen. */
   stammOf(staff,groups,n){
     const s=Staff.byName(staff,n);
     if(!s) return Groups.firstName(groups);
@@ -523,7 +523,7 @@ const Groups = {
     return Constants.GROUP_COLORS.find(c=>!used.has(c)) || Constants.GROUP_COLORS[0];
   },
   /** Löschschutz: Stammgruppe, Kommentare oder Einteilung von Personal mit
-      Stammgruppe. Eingeteilte Springer / Praktikanten/-innen blockieren nicht –
+      Stammgruppe. Eingeteilte SpringerInnen / PraktikantInnen blockieren nicht –
       sie werden beim Löschen einfach ausgetragen (siehe clearAssignments). */
   isUsed(staff,weeks,name){
     if((staff||[]).some(p=>p.stamm===name)) return true;
@@ -741,8 +741,8 @@ const Week = {
     if(!weeks[mondayISO]) weeks[mondayISO]=Week.blank(mondayISO);
     return weeks[mondayISO];
   },
-  /** Standardzuteilung: alle in ihrer Stammgruppe. Springer und
-      Praktikanten/-innen haben keine – sie bleiben im Pool. */
+  /** Standardzuteilung: alle in ihrer Stammgruppe. SpringerInnen und
+      PraktikantInnen haben keine – sie bleiben im Pool. */
   defaultAssign(staff){
     const a={};
     Staff.active(staff).filter(s=>!Staff.roleOf(s)).forEach(s=>{
@@ -1150,7 +1150,7 @@ const View = {
     });
   },
 
-  /** Kennzeichnung (Springer / Praktikant/-in) als Badge; leer ohne Kennzeichnung. */
+  /** Kennzeichnung (SpringerIn / PraktikantIn) als Badge; leer ohne Kennzeichnung. */
   roleBadge(role){
     return role ? ` <small class="role ${role}">${Constants.roleLabel(role)}</small>` : "";
   },
@@ -1634,7 +1634,7 @@ const GroupsDialog = {
           return;
         }
         const hint=Groups.hasAssignments(s.weeks,name)
-          ? " Eingeteilte Springer / Praktikanten/-innen werden dort ausgetragen." : "";
+          ? " Eingeteilte SpringerInnen / PraktikantInnen werden dort ausgetragen." : "";
         if(!confirm(name+" endgültig löschen?"+hint))return;
         Store.mutateQuiet(st=>{ Groups.clearAssignments(st.weeks,name); Groups.remove(st.groups,name); });
         GroupsDialog.renderList();
@@ -1819,7 +1819,7 @@ const Persistence = {
     if(!raw.weeks) raw.weeks={};
     if(!Array.isArray(raw.groups)) raw.groups=[];
     if(!Array.isArray(raw.staff)) raw.staff=[];
-    // Kennzeichnung (ältere Stände kennen sie nicht); ohne Stammgruppe bei Springer/Praktikant
+    // Kennzeichnung (ältere Stände kennen sie nicht); ohne Stammgruppe bei SpringerIn/PraktikantIn
     raw.staff.forEach(p=>Staff.setRole(p, p.role));
     // Kataloge und Tagesplanungen aller Kategorien anlegen (ältere Stände kennen nur "activities")
     Constants.CATEGORIES.forEach(cat=>{
@@ -2033,8 +2033,8 @@ const Print = {
       html+='<span><span class="sw" style="background:'+View.groupColor(g)+'"></span>'+Print.esc(g)+'</span>';
     });
     html+='<span>[Gruppe] = Gasteinsatz</span>';
-    html+='<span><span class="pr-person role-springer">Name</span> = Springer</span>'
-        +'<span><span class="pr-person role-praktikant">Name</span> = Praktikant/-in</span></div>';
+    html+='<span><span class="pr-person role-springer">Name</span> = SpringerIn</span>'
+        +'<span><span class="pr-person role-praktikant">Name</span> = PraktikantIn</span></div>';
     html+='<div class="pr-foot">Erstellt am '+Dates.fmtDE(new Date())+' · Read-only Ansicht</div>';
     html+='</section>';
     return html;
@@ -2108,7 +2108,7 @@ const App = {
     };
 
     document.getElementById("btnResetWeek").onclick=()=>{
-      if(!confirm("Diese Woche auf Standard (alle in Stammgruppe, Springer/Praktikanten im Pool) zurücksetzen?"))return;
+      if(!confirm("Diese Woche auf Standard (alle in Stammgruppe, SpringerInnen/PraktikantInnen im Pool) zurücksetzen?"))return;
       Store.mutate(s=>{
         const reset=Week.reset(s.staff);
         const wk=s.weeks[Store.weekKey()];

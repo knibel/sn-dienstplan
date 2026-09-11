@@ -19,47 +19,47 @@ Funktionalität: Personalverwaltung
     Und ich die Woche zurücksetze
     Dann ist "Nora" in Gruppe "Leitung" und Schicht "Frühschicht" eingeteilt
 
-  Szenario: Springer anlegen – ohne Stammgruppe, bleibt im Pool
+  Szenario: SpringerIn anlegen – ohne Stammgruppe, bleibt im Pool
     Wenn ich den Personal-Dialog öffne
-    Und ich eine neue Person "Nora" als "Springer" hinzufüge
-    Dann ist die Person "Nora" im Personal-Dialog als "Springer" gekennzeichnet
+    Und ich eine neue Person "Nora" als "SpringerIn" hinzufüge
+    Dann ist die Person "Nora" im Personal-Dialog als "SpringerIn" gekennzeichnet
     Und hat die Person "Nora" im Personal-Dialog keine Stammgruppe
     Wenn ich den Personal-Dialog schließe
     Und ich die Woche zurücksetze
     Dann ist "Nora" nicht eingeteilt
     Und erscheint "Nora" im Pool
-    Und ist der Pool-Chip "Nora" als "Springer" gekennzeichnet
+    Und ist der Pool-Chip "Nora" als "SpringerIn" gekennzeichnet
 
-  Szenario: Praktikant/-in anlegen und einteilen
+  Szenario: PraktikantIn anlegen und einteilen
     Wenn ich den Personal-Dialog öffne
-    Und ich eine neue Person "Paul" als "Praktikant/-in" hinzufüge
+    Und ich eine neue Person "Paul" als "PraktikantIn" hinzufüge
     Und ich den Personal-Dialog schließe
     Dann erscheint "Paul" im Pool
-    Und ist der Pool-Chip "Paul" als "Praktikant/-in" gekennzeichnet
+    Und ist der Pool-Chip "Paul" als "PraktikantIn" gekennzeichnet
     Wenn ich "Paul" aus dem Pool in Gruppe "Sterne" und Schicht "Mittelschicht" ziehe
     Dann ist "Paul" in Gruppe "Sterne" und Schicht "Mittelschicht" eingeteilt
-    Und ist der Chip "Paul" als "Praktikant/-in" gekennzeichnet
+    Und ist der Chip "Paul" als "PraktikantIn" gekennzeichnet
     Und ist der Chip "Paul" nicht als Gasteinsatz markiert
 
-  Szenario: Springer und Praktikant/-in sind im Raster unterscheidbar
-    Dann ist der Chip "Mirjam" als "Springer" gekennzeichnet
-    Und ist der Chip "Ole" als "Praktikant/-in" gekennzeichnet
+  Szenario: SpringerInnen und PraktikantIn sind im Raster unterscheidbar
+    Dann ist der Chip "Mirjam" als "SpringerIn" gekennzeichnet
+    Und ist der Chip "Ole" als "PraktikantIn" gekennzeichnet
     Und sind die Chips "Mirjam" und "Ole" unterschiedlich gekennzeichnet
 
-  Szenario: Bestehende Person zum Springer machen
+  Szenario: Bestehende Person zur SpringerIn machen
     Wenn ich den Personal-Dialog öffne
-    Und ich die Kennzeichnung der Person "Lars" auf "Springer" setze
-    Dann ist die Person "Lars" im Personal-Dialog als "Springer" gekennzeichnet
+    Und ich die Kennzeichnung der Person "Lars" auf "SpringerIn" setze
+    Dann ist die Person "Lars" im Personal-Dialog als "SpringerIn" gekennzeichnet
     Und hat die Person "Lars" im Personal-Dialog keine Stammgruppe
     Wenn ich den Personal-Dialog schließe
-    Dann ist der Chip "Lars" als "Springer" gekennzeichnet
+    Dann ist der Chip "Lars" als "SpringerIn" gekennzeichnet
     Wenn ich die Woche zurücksetze
     Dann ist "Lars" nicht eingeteilt
     Und erscheint "Lars" im Pool
 
-  Szenario: Springer erhält beim Zurücknehmen der Kennzeichnung wieder eine Stammgruppe
+  Szenario: SpringerIn erhält beim Zurücknehmen der Kennzeichnung wieder eine Stammgruppe
     Wenn ich den Personal-Dialog öffne
-    Und ich die Kennzeichnung der Person "Mirjam" auf "Mitarbeiter/-in" setze
+    Und ich die Kennzeichnung der Person "Mirjam" auf "MitarbeiterIn" setze
     Und ich die Stammgruppe der Person "Mirjam" auf "Wolken" setze
     Und ich den Personal-Dialog schließe
     Und ich die Woche zurücksetze

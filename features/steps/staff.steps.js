@@ -41,7 +41,7 @@ When("ich versuche die Person {string} zu löschen", async function (name) {
   await dialogPromise;
 });
 
-// ---- Kennzeichnung: Springer / Praktikant/-in ----
+// ---- Kennzeichnung: SpringerIn / PraktikantIn ----
 
 function staffRow(page, name) {
   return page.locator("#staffList .staffrow", { hasText: name });
