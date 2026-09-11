@@ -22,8 +22,6 @@ Funktionalität: Gruppenverwaltung
       | Mond                |
       | Sterne              |
       | Wolken              |
-      | Springer            |
-      | Praktikanten/-innen |
       | Leitung             |
       | Füchse              |
 
@@ -56,8 +54,6 @@ Funktionalität: Gruppenverwaltung
       | Mond                |
       | Sterne              |
       | Wolken              |
-      | Springer            |
-      | Praktikanten/-innen |
       | Leitung             |
 
   Szenario: Geladene Gruppen behalten ihre Farben
@@ -83,4 +79,4 @@ Funktionalität: Gruppenverwaltung
     Wenn ich den Gruppen-Dialog öffne
     Und ich die Farbe der Gruppe "Leitung" auf "#e8623c" setze
     Und ich eine neue Gruppe "Füchse" hinzufüge
-    Dann hat die Gruppe "Füchse" die Farbe "#5a6472"
+    Dann hat die Gruppe "Füchse" die Farbe "#7a56b0"

@@ -28,7 +28,8 @@
             "Jonas": { "shift": "spaet", "group": "Wolken", "away": "" },
             "Katrin": { "shift": "mittel", "group": "Wolken", "away": "" },
             "Lars": { "shift": "frueh", "group": "Wolken", "away": "" },
-            "Mirjam": { "shift": "frueh", "group": "Springer", "away": "" },
+            "Mirjam": { "shift": "frueh", "group": "Sonne", "away": "" },
+            "Ole": { "shift": "mittel", "group": "Mond", "away": "" },
             "Nadine": { "shift": "frueh", "group": "Leitung", "away": "" }
           }
         },
@@ -44,8 +45,6 @@
     { "name": "Mond", "color": "#3f8f5b" },
     { "name": "Sterne", "color": "#c9932b" },
     { "name": "Wolken", "color": "#3d6fb3" },
-    { "name": "Springer", "color": "#7a56b0" },
-    { "name": "Praktikanten/-innen", "color": "#0d8f9c" },
     { "name": "Leitung", "color": "#5a6472" }
   ],
   "activities": [
@@ -71,7 +70,8 @@
     { "name": "Jonas", "stamm": "Wolken", "active": true },
     { "name": "Katrin", "stamm": "Wolken", "active": true },
     { "name": "Lars", "stamm": "Wolken", "active": true },
-    { "name": "Mirjam", "stamm": "Springer", "active": true },
+    { "name": "Mirjam", "stamm": null, "role": "springer", "active": true },
+    { "name": "Ole", "stamm": null, "role": "praktikant", "active": true },
     { "name": "Nadine", "stamm": "Leitung", "active": true }
   ]
 }

@@ -18,6 +18,11 @@ Funktionalität: Export und Druck
     Und enthält die Druckansicht der aktuellen Woche "🤸 Turnen"
     Und enthält die Druckansicht der aktuellen Woche "⭐ Sommerfest"
 
+  Szenario: Springer und Praktikant/-in sind im Ausdruck gekennzeichnet
+    Dann ist "Mirjam" in der Druckansicht der aktuellen Woche als "Springer" gekennzeichnet
+    Und ist "Ole" in der Druckansicht der aktuellen Woche als "Praktikant/-in" gekennzeichnet
+    Und ist "Bernd" in der Druckansicht der aktuellen Woche nicht gekennzeichnet
+
   Szenario: Notizen an Info Kita und Gruppenkommentar erscheinen im Ausdruck
     Wenn ich die Aktivität "Elterncafé" in die Notizfläche "Info Kita" ziehe
     Und ich den Eintrag "Fotograf" in die Notizfläche der Gruppe "Sonne" ziehe

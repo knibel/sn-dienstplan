@@ -31,3 +31,13 @@ Beim Anlegen einer Person wird **keine Standard-Schicht mehr** hinterlegt – im
 
 In gut gefüllten Schichtzellen lief die Liste im PDF/Ausdruck seitlich aus der Zelle heraus. Jetzt wird **zwischen den Einträgen umgebrochen**, ein einzelner Name bzw. eine Aktivität bleibt dabei zusammen.
 
+
+## 5. Personal: Kennzeichnung „Springer" / „Praktikant/-in" – neu
+
+Im **Personal-Dialog** gibt es neben der Stammgruppe jetzt einen **Personal-Typ**: „Mitarbeiter/-in" (normal, mit Stammgruppe), „Springer" oder „Praktikant/-in".
+
+- **Springer und Praktikanten/-innen haben keine Stammgruppe.** Die Gruppenauswahl entfällt für sie; beim Zurücksetzen einer Woche bzw. in neuen Wochen landen sie **im Pool „Nicht eingeteilt"** und werden von dort per Drag & Drop in die Gruppe gezogen, in der sie gebraucht werden. Ein Gasteinsatz (gestrichelte Umrandung) gibt es für sie nicht.
+- Im **Browser** trägt der Chip ein Badge: **Springer** (weiß) bzw. **Praktikant/-in** (gelb) – so sind beide sofort erkennbar und voneinander unterscheidbar. Im Pool erscheinen sie neutral grau (keine Gruppenfarbe).
+- Im **Ausdruck** liegt der Name auf einer dezent gefärbten Kachel (ohne Rahmen, ohne Zusatztext): **Springer** mintgrün, **Praktikant/-in** apricot. Die Legende unter dem Wochenplan erklärt beides.
+- Die Kennzeichnung lässt sich auch **nachträglich** ändern; wird sie zurückgenommen, bekommt die Person wieder eine Stammgruppe.
+- Bestehende Stände laufen unverändert weiter (alle Personen gelten als „Stammgruppe"). Die bisherigen Hilfsgruppen „Springer" und „Praktikanten/-innen" werden nicht mehr benötigt und können im Gruppen-Dialog gelöscht werden, sobald niemand mehr darin eingeteilt ist.

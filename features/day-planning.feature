@@ -26,8 +26,6 @@ Funktionalität: Tagesplanung
       | Mond                |
       | Sterne              |
       | Wolken              |
-      | Springer            |
-      | Praktikanten/-innen |
       | Leitung             |
     Und sehe ich die Schichtspalten:
       | Schicht       |

@@ -60,11 +60,12 @@ function noteChip(zone, cat, name) {
   return zone.locator(`.chip.item[data-cat="${cat}"][data-item="${name}"]`);
 }
 
-// Ziel zuerst in den sichtbaren Bereich holen: scrollt die Seite erst während
-// des Ziehens, landet der Drop sonst an der falschen Stelle. Der Pool bleibt
-// dank sticky-Position immer sichtbar.
+// Ziel zuerst mittig in den sichtbaren Bereich holen: scrollt die Seite erst
+// während des Ziehens, landet der Drop sonst an der falschen Stelle – und am
+// oberen Rand würde das Ziel von Header/Toolbar (sticky) verdeckt. Der Pool
+// bleibt dank sticky-Position immer sichtbar.
 async function dragToTarget(source, target) {
-  await target.scrollIntoViewIfNeeded();
+  await target.evaluate((el) => el.scrollIntoView({ block: "center" }));
   await source.dragTo(target);
 }
 
