@@ -522,13 +522,31 @@ const Groups = {
     const used=Groups.usedColors(groups);
     return Constants.GROUP_COLORS.find(c=>!used.has(c)) || Constants.GROUP_COLORS[0];
   },
+  /** Löschschutz: Stammgruppe, Kommentare oder Einteilung von Personal mit
+      Stammgruppe. Eingeteilte Springer / Praktikanten/-innen blockieren nicht –
+      sie werden beim Löschen einfach ausgetragen (siehe clearAssignments). */
   isUsed(staff,weeks,name){
     if((staff||[]).some(p=>p.stamm===name)) return true;
     if(Notes.groupUsed(weeks,name)) return true;
     return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>{
       if(((d.comments||{})[name]||"").trim()) return true;
-      return Object.values(d.assign||{}).some(a=>a.group===name);
+      return Object.entries(d.assign||{}).some(([n,a])=>a.group===name && !Staff.roleOfName(staff,n));
     }));
+  },
+  /** Ist in dieser Gruppe irgendwo jemand eingeteilt? */
+  hasAssignments(weeks,name){
+    return Object.values(weeks||{}).some(wk=>(wk.days||[]).some(d=>
+      Object.values(d.assign||{}).some(a=>a.group===name)
+    ));
+  },
+  /** Alle Einteilungen in diese Gruppe entfernen (Personen landen im Pool). */
+  clearAssignments(weeks,name){
+    Object.values(weeks||{}).forEach(wk=>(wk.days||[]).forEach(d=>{
+      Object.entries(d.assign||{}).forEach(([person,a])=>{
+        if(a.group===name) delete d.assign[person];
+      });
+    }));
+    return weeks;
   },
   add(groups,name,color){
     groups.push({name, color:color || Groups.defaultColor(groups)});
@@ -1615,8 +1633,10 @@ const GroupsDialog = {
           alert(name+" wird noch verwendet (Stammgruppe, Einteilung oder Kommentar) und kann nicht gelöscht werden.");
           return;
         }
-        if(!confirm(name+" endgültig löschen?"))return;
-        Store.mutateQuiet(()=>{ Groups.remove(s.groups,name); });
+        const hint=Groups.hasAssignments(s.weeks,name)
+          ? " Eingeteilte Springer / Praktikanten/-innen werden dort ausgetragen." : "";
+        if(!confirm(name+" endgültig löschen?"+hint))return;
+        Store.mutateQuiet(st=>{ Groups.clearAssignments(st.weeks,name); Groups.remove(st.groups,name); });
         GroupsDialog.renderList();
         GroupsDialog.resetNewColor();
       };
