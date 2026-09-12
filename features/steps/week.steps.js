@@ -95,3 +95,89 @@ When("ich versuche die Vorwoche zu kopieren", async function () {
   await this.page.locator("#btnCopyPrev").click();
   await dialogPromise;
 });
+
+// ---- Sprung zu Kalenderwoche / Tastenkürzel ----
+
+async function submitGotoWeek(page, kw, year) {
+  await page.locator("#gotoKW").fill(String(kw));
+  await page.locator("#gotoYear").fill(String(year));
+  await page.locator("#gotoWeekGo").click();
+}
+
+When(
+  "ich per Klick auf die Wochenbeschriftung zu KW {int} im Jahr {int} springe",
+  async function (kw, year) {
+    const before = await this.page.locator("#weekLabel").innerText();
+    await this.page.locator("#weekLabel").click();
+    await this.page.locator("#gotoWeekDialog[open]").waitFor();
+    await submitGotoWeek(this.page, kw, year);
+    // Entweder schließt der Dialog und die Woche wechselt, oder er bleibt mit Fehler offen
+    await this.page.waitForFunction(
+      (prev) =>
+        document.getElementById("gotoWeekError")?.textContent ||
+        document.getElementById("weekLabel")?.textContent !== prev,
+      before
+    );
+  }
+);
+
+When("ich die Taste {string} drücke", async function (key) {
+  await this.page.locator("body").click({ position: { x: 1, y: 1 } });
+  await this.page.keyboard.press(key);
+  await this.page.waitForTimeout(100);
+});
+
+When(
+  "ich im Sprungdialog KW {int} und Jahr {int} eingebe und bestätige",
+  async function (kw, year) {
+    await submitGotoWeek(this.page, kw, year);
+    await this.page.locator("#gotoWeekDialog[open]").waitFor({ state: "detached" }).catch(() => {});
+    await this.page.waitForTimeout(100);
+  }
+);
+
+When("ich in das Tagesinfo-Feld {string} tippe", async function (text) {
+  const field = this.page.locator("#dayInfo");
+  await field.click();
+  await field.type(text);
+  await this.page.waitForTimeout(100);
+});
+
+Then("zeigt die Wochenbeschriftung {string}", async function (expected) {
+  await this.page.waitForFunction(
+    (exp) => document.getElementById("weekLabel")?.textContent === exp,
+    expected
+  );
+});
+
+Then("ist der Dialog {string} geöffnet", async function (title) {
+  const dlg = this.page.locator("dialog[open]", { hasText: title });
+  await dlg.waitFor();
+});
+
+Then("ist kein Dialog geöffnet", async function () {
+  assert.strictEqual(await this.page.locator("dialog[open]").count(), 0);
+});
+
+Then("zeigt der Sprungdialog den Fehler {string}", async function (msg) {
+  await this.page.locator("#gotoWeekError", { hasText: msg }).waitFor();
+});
+
+Then(
+  "ist der Sprungdialog mit KW {int} und Jahr {int} vorbelegt",
+  async function (kw, year) {
+    assert.strictEqual(await this.page.locator("#gotoKW").inputValue(), String(kw));
+    assert.strictEqual(await this.page.locator("#gotoYear").inputValue(), String(year));
+  }
+);
+
+Then("zeigt die Wochenbeschriftung die heutige Woche", async function () {
+  const expected = await this.page.evaluate(() => {
+    const mon = Dates.mondayOf(new Date());
+    return "KW " + Dates.isoWeek(mon) + " · " + Dates.fmtDE(mon) + " – " + Dates.fmtDE(Dates.addDays(mon, 4));
+  });
+  await this.page.waitForFunction(
+    (exp) => document.getElementById("weekLabel")?.textContent === exp,
+    expected
+  );
+});

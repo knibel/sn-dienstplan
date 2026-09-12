@@ -23,6 +23,8 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .weeknav button,.toolbar button{cursor:pointer;border:1px solid var(--line-strong);background:#fff;color:var(--ink);border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit}
 .weeknav button:hover,.toolbar button:hover{background:#f0f3f7}
 .weeknav .weeklabel{font-size:13px;font-weight:600;min-width:230px;text-align:center;color:#fff}
+.weeknav .weeklabel{cursor:pointer;border-radius:6px;padding:4px 6px}
+.weeknav .weeklabel:hover{background:rgba(255,255,255,.15)}
 .toolbar{background:#fff;border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:44px;z-index:29}
 .toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
 .toolbar .hint{color:var(--muted);font-size:11.5px;margin-left:auto}
@@ -115,6 +117,9 @@ dialog .btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 dialog .btns button{cursor:pointer;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:12px;border:1px solid var(--line-strong);background:#fff}
 dialog .btns .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
+dialog .row{display:flex;gap:8px}
+dialog .row>div{flex:1}
+dialog .error{color:#b3341f;font-size:12px;margin-top:8px;min-height:1.2em}
 .staffrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px}
 .staffrow .dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px}
 .staffrow .nm{flex:1;font-weight:600}
@@ -200,7 +205,7 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   <h1>🐣 Dienstplan Spatzennest <span class="app-version" id="appVersion"></span></h1>
   <div class="weeknav">
     <button id="prevWeek">‹ Woche</button>
-    <span class="weeklabel" id="weekLabel"></span>
+    <span class="weeklabel" id="weekLabel" title="Zu Kalenderwoche springen (Taste W)"></span>
     <button id="nextWeek">Woche ›</button>
   </div>
 </header>
@@ -364,6 +369,21 @@ dialog .btns .danger{color:#b3341f;border-color:#e0b0a8}
   </div>
 </div></dialog>
 
+<dialog id="gotoWeekDialog"><div class="dlg">
+  <h3>Zu Kalenderwoche springen</h3>
+  <form id="gotoWeekForm" method="dialog">
+    <div class="row">
+      <div><label>KW</label><input type="number" id="gotoKW" min="1" max="53" required></div>
+      <div><label>Jahr</label><input type="number" id="gotoYear" min="1970" max="2100" required></div>
+    </div>
+    <div class="error" id="gotoWeekError"></div>
+    <div class="btns">
+      <button type="button" id="gotoWeekCancel">Abbrechen</button>
+      <button type="submit" id="gotoWeekGo" class="primary">Springen</button>
+    </div>
+  </form>
+</div></dialog>
+
 <!-- Read-only Druckansicht (nur beim Drucken sichtbar) -->
 <div id="printRoot"></div>
 
@@ -462,6 +482,16 @@ const Dates = {
     const firstThursday=new Date(Date.UTC(x.getUTCFullYear(),0,4));
     const diff=x-firstThursday;
     return 1+Math.round(diff/(7*24*60*60*1000));
+  },
+  /** Anzahl ISO-Kalenderwochen eines Jahres (52 oder 53); der 28.12. liegt immer in der letzten KW. */
+  isoWeeksInYear(year){
+    return Dates.isoWeek(new Date(year,11,28));
+  },
+  /** Montag der ISO-Kalenderwoche (Gegenstück zu isoWeek); null bei ungültiger KW. Der 4.1. liegt immer in KW 1. */
+  mondayOfIsoWeek(year,week){
+    if(!Number.isInteger(year)||!Number.isInteger(week)) return null;
+    if(week<1||week>Dates.isoWeeksInYear(year)) return null;
+    return Dates.addDays(Dates.mondayOf(new Date(year,0,4)),(week-1)*7);
   },
 };
 
@@ -1812,6 +1842,38 @@ const CatalogDialog = {
   },
 };
 
+// ---------- GotoWeekDialog (Sprung zu beliebiger Kalenderwoche) ----------
+const GotoWeekDialog = {
+  open(){
+    const mon=Dates.toDate(Store.weekKey());
+    document.getElementById("gotoKW").value=Dates.isoWeek(mon);
+    // ISO-Jahr: die KW um den Jahreswechsel kann zum Vor-/Folgejahr gehören.
+    document.getElementById("gotoYear").value=Dates.addDays(mon,3).getFullYear();
+    document.getElementById("gotoWeekError").textContent="";
+    document.getElementById("gotoWeekDialog").showModal();
+    document.getElementById("gotoKW").select();
+  },
+
+  wire(){
+    const dlg=document.getElementById("gotoWeekDialog");
+    document.getElementById("weekLabel").onclick=()=>GotoWeekDialog.open();
+    document.getElementById("gotoWeekCancel").onclick=()=>dlg.close();
+    document.getElementById("gotoWeekForm").onsubmit=e=>{
+      e.preventDefault();
+      const year=Number(document.getElementById("gotoYear").value);
+      const week=Number(document.getElementById("gotoKW").value);
+      const mon=Dates.mondayOfIsoWeek(year,week);
+      if(!mon){
+        document.getElementById("gotoWeekError").textContent=
+          Number.isInteger(year) ? "Das Jahr "+year+" hat nur "+Dates.isoWeeksInYear(year)+" Kalenderwochen." : "Ungültige Eingabe.";
+        return;
+      }
+      dlg.close();
+      App.gotoWeek(Dates.iso(mon));
+    };
+  },
+};
+
 // ---------- Persistence ----------
 const Persistence = {
   normalize(raw){
@@ -2134,6 +2196,27 @@ const App = {
     CatalogDialog.wire();
     Persistence.wire();
     Print.wire();
+    GotoWeekDialog.wire();
+    document.addEventListener("keydown",App.onKeydown);
+  },
+
+  /**
+   * Tastenkürzel ohne Modifier (kollidieren so nicht mit Browser-Shortcuts):
+   * W = zu Kalenderwoche springen, ←/→ = Vor-/Folgewoche, T = heutige Woche.
+   * Greifen nur, wenn kein Eingabefeld fokussiert und kein Dialog offen ist.
+   */
+  onKeydown(e){
+    if(e.ctrlKey||e.altKey||e.metaKey) return;
+    if(document.querySelector("dialog[open]")) return;
+    const t=e.target;
+    if(t && (t.matches("input,textarea,select") || t.isContentEditable)) return;
+    const key=e.key.toLowerCase();
+    if(key==="w") GotoWeekDialog.open();
+    else if(key==="arrowleft") App.gotoWeek(Week.prevMondayISO(Store.weekKey()));
+    else if(key==="arrowright") App.gotoWeek(Week.nextMondayISO(Store.weekKey()));
+    else if(key==="t") App.gotoWeek(Dates.iso(Dates.mondayOf(new Date())));
+    else return;
+    e.preventDefault();
   },
 
   init(){
