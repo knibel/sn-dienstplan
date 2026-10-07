@@ -89,3 +89,32 @@ Then(
     assert.ok(value.includes(comment), `Kommentar sollte "${comment}" enthalten, war "${value}"`);
   }
 );
+
+When(
+  "ich für die Gruppe {string} einen sechszeiligen Kommentar eintrage",
+  async function (group) {
+    const rowLabel = groupLabel(this.page, group);
+    const commentBox = rowLabel.locator(
+      "xpath=following-sibling::div[contains(@class,'commentcol')][1]//textarea"
+    );
+    await commentBox.fill(["Zeile 1", "Zeile 2", "Zeile 3", "Zeile 4", "Zeile 5", "Zeile 6"].join("\n"));
+  }
+);
+
+Then(
+  "zeigt das Kommentarfeld der Gruppe {string} den ganzen Text ohne Scrollen",
+  async function (group) {
+    const rowLabel = groupLabel(this.page, group);
+    const commentBox = rowLabel.locator(
+      "xpath=following-sibling::div[contains(@class,'commentcol')][1]//textarea"
+    );
+    const { scrollHeight, clientHeight, value } = await commentBox.evaluate(
+      (ta) => ({ scrollHeight: ta.scrollHeight, clientHeight: ta.clientHeight, value: ta.value })
+    );
+    assert.ok(value.includes("Zeile 6"), `Kommentar sollte den langen Text enthalten, war "${value}"`);
+    assert.ok(
+      scrollHeight <= clientHeight,
+      `Kommentarfeld sollte mitwachsen (scrollHeight ${scrollHeight} > clientHeight ${clientHeight})`
+    );
+  }
+);

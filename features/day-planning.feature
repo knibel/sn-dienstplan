@@ -77,6 +77,14 @@ Funktionalität: Tagesplanung
     Wenn ich für die Gruppe "Sonne" den Kommentar "Bringdienst beachten" eintrage
     Dann enthält der Kommentar der Gruppe "Sonne" "Bringdienst beachten"
 
+  Szenario: Kommentarfeld wächst mit langem Text mit
+    Wenn ich den Tag "Montag" wähle
+    Und ich für die Gruppe "Sonne" einen sechszeiligen Kommentar eintrage
+    Dann zeigt das Kommentarfeld der Gruppe "Sonne" den ganzen Text ohne Scrollen
+    Wenn ich den Tag "Dienstag" wähle
+    Und ich den Tag "Montag" wähle
+    Dann zeigt das Kommentarfeld der Gruppe "Sonne" den ganzen Text ohne Scrollen
+
   Szenario: Aktivität an Info Kita hängen und wieder entfernen
     Wenn ich die Aktivität "Fußball spielen" in die Notizfläche "Info Kita" ziehe
     Dann hängt die Aktivität "Fußball spielen" an der Notizfläche "Info Kita"

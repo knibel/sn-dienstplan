@@ -58,7 +58,7 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .pool.dragover{outline:2px dashed var(--muted);outline-offset:-4px}
 
 /* ---- grid / chips ---- */
-.grid{display:grid;grid-template-columns:150px 1fr 1fr 1fr 150px;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:#fff;min-width:900px}
+.grid{display:grid;grid-template-columns:150px 1fr 1fr 1fr 200px;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:#fff;min-width:900px}
 .grid .ghead{background:#f3f6f9;font-weight:700;padding:8px 10px;font-size:12px;border-bottom:2px solid var(--line-strong);border-right:1px solid var(--line);text-align:center}
 .grid .ghead.rowlbl{text-align:left}
 .grouprow{display:contents}
@@ -85,7 +85,7 @@ header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px}
 .chip.item{background:#fff;color:var(--ink);border:1.5px solid var(--line-strong);font-weight:600}
 .chip .ico{font-size:14px;line-height:1}
 .commentcol{padding:6px;border-bottom:1px solid var(--line);background:#fafcfe}
-.commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:vertical;min-height:44px;background:#fff}
+.commentcol textarea{width:100%;border:1px solid var(--line);border-radius:5px;font-family:inherit;font-size:11.5px;padding:5px;resize:none;overflow:hidden;min-height:44px;background:#fff}
 
 /* ---- Notizzonen (Info Kita / Info Tag / Kommentar) ---- */
 /* Ablagefläche für Aktivitäten & Sonstiges, direkt über dem Freitextfeld. */
@@ -1174,10 +1174,18 @@ const View = {
       ta.value=vm.comments[g]||""; ta.placeholder="…";
       ta.oninput=()=>{
         Store.mutateQuiet(()=>{ Store.currentDay().comments[g]=ta.value; });
+        View.fitTextarea(ta);
       };
       View.wireTextZoneDrop(ta,zone);
       cc.appendChild(ta); grid.appendChild(cc);
+      View.fitTextarea(ta);
     });
+  },
+
+  /** Textfeld so hoch wie sein Inhalt – die Gruppenzeile wächst mit. */
+  fitTextarea(ta){
+    ta.style.height="auto";
+    ta.style.height=(ta.scrollHeight+ta.offsetHeight-ta.clientHeight)+"px";
   },
 
   /** Kennzeichnung (SpringerIn / PraktikantIn) als Badge; leer ohne Kennzeichnung. */
