@@ -4,4 +4,6 @@ Die Anwendung muss offline nutzbar sein.
 Wir versuchen eine lightweight clean architecture beizubehalten.
 Im Zweifel entscheiden wir uns für die einfache Lösung. 
 Stelle immer sicher, dass die Testfälle nach einer Änderung aktualisiert und ausgeführt wurden.
-Die Anwendung wird auf einem Windows Betriebssystem ausgeführt.
+Die Anwendung wird auf einem Windows Betriebssystem ausgeführt. Aktuell Windows 11 Home mit einem Firefox Browser.
+Die Anwendung wird massgeblich von einer Person bedient, bzw. mit Daten befuellt. Die Exporte dienen als Read-Only-Sicht fuer die anderen Mitarbeiter.
+Es gibt insgesamt ungefaehr 20 Mitarbeiter.
