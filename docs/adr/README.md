@@ -1,5 +1,10 @@
 # Architekturentscheidungen (ADR)
 
+> **Zukünftiges Vorhaben – noch nicht umgesetzt.** Alle ADRs in diesem Ordner beschreiben das
+> geplante Client-Server-Redesign. Die aktuelle Entwicklung der bestehenden Anwendung
+> (`dienstplan.html`, eine Datei, offline nutzbar) ist davon nicht berührt; für sie gilt
+> weiterhin die CLAUDE.md. Die ADRs werden erst mit Beginn des Redesigns maßgeblich.
+
 Hier halten wir fest, warum die Dienstplan-Anwendung so gebaut ist, wie sie gebaut ist.
 Jede Entscheidung steht in einer eigenen Datei und wird nicht nachträglich umgeschrieben.
 Ändert sich eine Entscheidung, entsteht ein neues ADR, das das alte ersetzt

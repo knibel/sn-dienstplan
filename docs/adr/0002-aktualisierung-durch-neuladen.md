@@ -2,6 +2,12 @@
 
 - **Status:** Akzeptiert
 - **Datum:** 2026-10-09
+- **Geltung:** Geplantes Redesign, noch nicht umgesetzt
+
+> **Zukünftiges Vorhaben – noch nicht umgesetzt.** Diese Entscheidung gilt für das geplante
+> Client-Server-Redesign. Die aktuelle Entwicklung der bestehenden Anwendung
+> (`dienstplan.html`, eine Datei, offline nutzbar) ist davon nicht berührt; für sie gilt
+> weiterhin die CLAUDE.md.
 
 ## Kontext
 
